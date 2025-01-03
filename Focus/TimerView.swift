@@ -28,14 +28,14 @@ struct TimerView: View {
             VStack {
                 Text("Start your journey today!")
                     .foregroundStyle(Color.white)
+                    .font(.custom("SourceCodePro-Bold", size: 16))
                 
                 Spacer()
                 
                 CircularTimeSlider(selectedTime: $timer, options: $options)
                 
                 Text("\(Int(timer)):00")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+                    .font(.custom("SourceCodePro-Regular", size: 40))
                     .foregroundColor(.fSecondary)
                     .padding()
                 
@@ -53,6 +53,7 @@ struct TimerView: View {
 
                         Text("Focus")
                             .foregroundStyle(Color.fText)
+                            .font(.custom("SourceCodePro-Bold", size: 16))
                     }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 5))

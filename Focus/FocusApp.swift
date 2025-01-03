@@ -12,7 +12,7 @@ import DeviceActivity
 struct FocusApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            GameView()
         }
     }
 }

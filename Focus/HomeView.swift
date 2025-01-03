@@ -40,8 +40,7 @@ struct HomeView: View {
                                     .frame(width: 100, height: 50)
                                 
                                 Text("Resume Focus")
-                                    .bold()
-                                    .font(.system(size: 16))
+                                    .font(.custom("SourceCodePro-Bold", size: 16))
                                     .foregroundStyle(Color.black)
                             }
                         }
@@ -72,8 +71,7 @@ struct HomeView: View {
                                     }
                                 
                                 Text("Break")
-                                    .bold()
-                                    .font(.system(size: 16))
+                                    .font(.custom("SourceCodePro-Bold", size: 16))
                                     .foregroundStyle(Color.black)
                             }
                         }
@@ -91,8 +89,7 @@ struct HomeView: View {
                                 .frame(width: 100, height: 50)
                             
                             Text("Give Up")
-                                .bold()
-                                .font(.system(size: 16))
+                                .font(.custom("SourceCodePro-Bold", size: 16))
                                 .foregroundStyle(Color.black)
                         }
                     }
@@ -164,12 +161,11 @@ struct CircularTimerView: View {
             
             VStack {
                 Text("\(viewModel.minutesLeft) min")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+                    .font(.custom("SourceCodePro-Bold", size: 30))
                     .foregroundColor(Color.fText)
                 
                 Text("\(viewModel.secondsLeft) sec")
-                    .font(.title2)
+                    .font(.custom("SourceCodePro-Bold", size: 25))
                     .foregroundColor(Color.fTertiary)
             }
         }
@@ -181,26 +177,6 @@ struct CircularTimerView: View {
             if !newValue {
                 viewModel.stopTimer()
             }
-        }
-    }
-}
-
-struct CooldownDisplayView: View {
-    @ObservedObject var viewModel: BreakTimerViewModel
-
-    var body: some View {
-        VStack {
-            Text("Cooldown Active")
-                .font(.largeTitle)
-                .foregroundColor(.white)
-
-            Text("Time Remaining: \(viewModel.cooldownSecondsLeft / 60) min \(viewModel.cooldownSecondsLeft % 60) sec")
-                .font(.title2)
-                .foregroundColor(.gray)
-
-            Text("Please wait before starting a new break.")
-                .foregroundColor(.white)
-                .padding()
         }
     }
 }
