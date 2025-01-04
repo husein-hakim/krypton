@@ -1,4 +1,2 @@
-forest.wav filter=lfs diff=lfs merge=lfs -text
 Assets.xcassets/sounds/forest.dataset/forest.wav filter=lfs diff=lfs merge=lfs -text
-Focus/forest.wav filter=lfs diff=lfs merge=lfs -text
 forestl.wav filter=lfs diff=lfs merge=lfs -text
