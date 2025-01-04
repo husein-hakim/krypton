@@ -100,7 +100,7 @@ struct HomeView: View {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             if playing {
-                                audioPlayer.stopSound()
+                                audioPlayer.stopAllSounds()
                             } else {
                                 audioPlayer.playSound(fileName: "forest", fileType: "wav")
                             }

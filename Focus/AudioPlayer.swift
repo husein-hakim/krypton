@@ -9,25 +9,71 @@ import Foundation
 import AVFoundation
 
 class AudioPlayer: ObservableObject {
-    private var player: AVAudioPlayer?
+    private var players: [String: AVAudioPlayer] = [:]
     
-    func playSound(fileName: String, fileType: String) {
+    /// Preloads the audio file into memory to avoid delays during playback.
+    func preloadAudio(fileName: String, fileType: String) {
+        let key = "\(fileName).\(fileType)"
+        guard players[key] == nil else { return } // Skip if already preloaded
+        
         guard let url = Bundle.main.url(forResource: fileName, withExtension: fileType) else {
             print("Sound file not found")
             return
         }
         
         do {
-            player = try AVAudioPlayer(contentsOf: url)
-            player?.numberOfLoops = -1 // Loop indefinitely
-            player?.play()
+            let player = try AVAudioPlayer(contentsOf: url)
+            player.prepareToPlay()
+            players[key] = player
         } catch {
-            print("Error playing sound: \(error.localizedDescription)")
+            print("Error loading audio file: \(error.localizedDescription)")
         }
     }
     
-    func stopSound() {
-        player?.stop()
+    /// Plays the preloaded audio file once.
+    func playSoundOnce(fileName: String, fileType: String) {
+        let key = "\(fileName).\(fileType)"
+        
+        if let player = players[key] {
+            player.stop() // Reset playback
+            player.currentTime = 0
+            player.play()
+        } else {
+            preloadAudio(fileName: fileName, fileType: fileType)
+            players[key]?.play()
+        }
+    }
+    
+    /// Loops the preloaded audio file indefinitely.
+    func playSound(fileName: String, fileType: String) {
+        let key = "\(fileName).\(fileType)"
+        
+        if let player = players[key] {
+            player.numberOfLoops = -1
+            player.stop() // Reset playback
+            player.currentTime = 0
+            player.play()
+        } else {
+            preloadAudio(fileName: fileName, fileType: fileType)
+            if let player = players[key] {
+                player.numberOfLoops = -1
+                player.play()
+            }
+        }
+    }
+    
+    /// Stops playback of the specified audio file.
+    func stopSound(fileName: String, fileType: String) {
+        let key = "\(fileName).\(fileType)"
+        players[key]?.stop()
+    }
+    
+    /// Stops all currently playing sounds.
+    func stopAllSounds() {
+        for player in players.values {
+            player.stop()
+        }
     }
 }
+
 

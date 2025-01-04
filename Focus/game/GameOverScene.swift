@@ -16,14 +16,14 @@ class GameOverScene: SKScene {
         background.position = CGPoint(x: size.width / 2, y: size.height / 2)
         addChild(background)
         
-        gameOver.position = CGPoint(x: size.width / 2, y: size.height / 2)
-        gameOver.setScale(0.7)
+        gameOver.position = CGPoint(x: size.width / 2, y: size.height / 1.5)
+        gameOver.setScale(0.4)
         gameOver.zPosition = 5
         addChild(gameOver)
         
         let tapLabel = SKLabelNode(fontNamed: "HelveticaNeue-Light")
         tapLabel.text = "Tap to play again"
-        tapLabel.fontSize = 46
+        tapLabel.fontSize = 30
         tapLabel.position = CGPoint(x: size.width / 2, y: size.height / 2 - 50)
         tapLabel.zPosition = 5
         tapLabel.fontColor = .black

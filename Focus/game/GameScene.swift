@@ -17,11 +17,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var firstTouch: Bool = false
     let scoreLabel = SKLabelNode(fontNamed: "HelveticaNeue-Light")
     
+    var previousPlayerY: CGFloat = 0
     var score = 0
     var bestScore = 0
+    var downwardForce: CGFloat = 0.0
     
     let cam = SKCameraNode()
     var isCamFollowingPlayer: Bool = false
+    
+    let audioPlayer = AudioPlayer()
     
     enum bitmasks: UInt32 {
         case player = 0b1
@@ -72,8 +76,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         gameOverLine.physicsBody?.contactTestBitMask = bitmasks.platform.rawValue | bitmasks.gameOverLine.rawValue
         addChild(gameOverLine)
         
-        scoreLabel.position.x = 100
+        scoreLabel.fontColor = .black
+        scoreLabel.fontSize = 30
+        scoreLabel.position.x = 75
         scoreLabel.zPosition = 20
+        scoreLabel.position.y = size.height - 80
+        scoreLabel.text = "Score: \(score)"
+        addChild(scoreLabel)
         
         cam.setScale(1)
         cam.position = CGPoint(x: size.width / 2, y: size.height / 2)
@@ -83,9 +92,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func update(_ currentTime: TimeInterval) {
+        updateScore()
+        removeOffscreenPlatforms()
+        downwardForce += 0.5
         if player.position.y > UIScreen.main.bounds.height * 0.5 {
             cam.position.y = player.position.y
             background.position.y = player.position.y
+            scoreLabel.position.y = player.position.y + size.height * 0.4
+            previousPlayerY = player.position.y
 
             if let highestPlatform = children.filter({ $0.name == "platform" })
                 .max(by: { $0.position.y < $1.position.y }) {
@@ -103,6 +117,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         if player.physicsBody!.velocity.dy > 0 {
             gameOverLine.position.y = player.position.y - 600
+        } else {
+            player.physicsBody?.applyForce(CGVector(dx: 0, dy: -downwardForce))
         }
     }
     
@@ -126,6 +142,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             if player.physicsBody!.velocity.dy < 0 {
                 player.physicsBody?.velocity = CGVector(dx: (player.physicsBody!.velocity.dx), dy: 1150)
                 contactB.node?.removeFromParent()
+                updateScore()
+                audioPlayer.playSoundOnce(fileName: "jump", fileType: ".mp3")
             }
         }
         
@@ -154,9 +172,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func gameOver() {
         let gameOverScene = GameOverScene(size: self.size)
         let transition = SKTransition.crossFade(withDuration: 0.5)
+        removeOffscreenPlatforms()
+        audioPlayer.playSoundOnce(fileName: "fall", fileType: ".mp3")
         
-        view?.presentScene(gameOverScene, transition: transition)
-        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            self.view?.presentScene(gameOverScene, transition: transition)
+        }
     }
     
     func createPlatform(atHeightRange range: ClosedRange<Int>) {
@@ -169,7 +190,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         )
         platform.setScale(0.3)
         platform.zPosition = 5
-        platform.physicsBody = SKPhysicsBody(rectangleOf: platform.size)
+        let hitboxSize = CGSize(width: platform.size.width, height: platform.size.height * 0.8) // Adjust height (80% of the sprite's height)
+        let hitboxCenter = CGPoint(x: 0, y: -platform.size.height * 0.2) // Lower by 10% of the sprite's height
+
+        platform.physicsBody = SKPhysicsBody(rectangleOf: hitboxSize, center: hitboxCenter)
         platform.physicsBody?.isDynamic = false
         platform.physicsBody?.allowsRotation = false
         platform.physicsBody?.affectedByGravity = false
@@ -177,6 +201,50 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         platform.physicsBody?.collisionBitMask = 0
         platform.physicsBody?.contactTestBitMask = bitmasks.player.rawValue
         platform.name = "platform"
+        
+        if score > 500{
+            let shouldMove = Bool.random() // Randomly decide if this platform should move
+            if shouldMove {
+                let movementDistance: CGFloat = CGFloat.random(in: 50...150) // Movement range
+                let movementDuration: TimeInterval = TimeInterval.random(in: 0.3...2.0) // Movement speed
+                let moveLeft = SKAction.moveBy(x: -movementDistance, y: 0, duration: movementDuration)
+                let moveRight = SKAction.moveBy(x: movementDistance, y: 0, duration: movementDuration)
+                let movementSequence = SKAction.sequence([moveLeft, moveRight])
+                let repeatMovement = SKAction.repeatForever(movementSequence)
+                platform.run(repeatMovement)
+            }
+        }
+        
+        if score > 1000 {
+            let movementType = Int.random(in: 1...3)
+            
+            switch movementType {
+            case 1:
+                let movementDistance: CGFloat = CGFloat.random(in: 50...150) // Movement range
+                let movementDuration: TimeInterval = TimeInterval.random(in: 0.3...2.0) // Movement speed
+                let moveLeft = SKAction.moveBy(x: -movementDistance, y: 0, duration: movementDuration)
+                let moveRight = SKAction.moveBy(x: movementDistance, y: 0, duration: movementDuration)
+                let movementSequence = SKAction.sequence([moveLeft, moveRight])
+                let repeatMovement = SKAction.repeatForever(movementSequence)
+                platform.run(repeatMovement)
+                
+            case 2:
+                let movementDistance: CGFloat = CGFloat.random(in: 50...150 + CGFloat(score))
+                let movementDuration: TimeInterval = max(0.5, 4.0 - Double(score) * 0.1)
+                let moveLeft = SKAction.moveBy(x: -movementDistance, y: 0, duration: movementDuration)
+                let moveRight = SKAction.moveBy(x: movementDistance, y: 0, duration: movementDuration)
+                let pause = SKAction.wait(forDuration: TimeInterval.random(in: 0.5...2.0))
+                let movementSequence = SKAction.sequence([moveLeft, pause, moveRight, pause])
+                let repeatMovement = SKAction.repeatForever(movementSequence)
+                platform.run(repeatMovement)
+                
+            case 3:
+                break
+                
+            default:
+                break
+            }
+        }
 
         addChild(platform)
     }
@@ -185,7 +253,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let numberOfInitialPlatforms = 6
         let spacing = 200
 
-        for i in 0..<numberOfInitialPlatforms {
+        for i in 1..<numberOfInitialPlatforms {
             let platform = SKSpriteNode(imageNamed: "floating-grass")
             platform.position = CGPoint(
                 x: GKRandomDistribution(lowestValue: 70, highestValue: Int(size.width - 70)).nextInt(),
@@ -212,5 +280,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         children
             .filter { $0.name == "platform" && $0.position.y < thresholdHeight }
             .forEach { $0.removeFromParent() }
+    }
+    
+    func updateScore() {
+        withAnimation {
+            if player.position.y > previousPlayerY {
+                score = Int(player.position.y / 10) - 6
+            }
+        }
+        scoreLabel.text = "Score: \(score)"
     }
 }
