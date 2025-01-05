@@ -95,6 +95,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         updateScore()
         removeOffscreenPlatforms()
         downwardForce += 0.5
+        
         if player.position.y > UIScreen.main.bounds.height * 0.5 {
             cam.position.y = player.position.y
             background.position.y = player.position.y
@@ -188,9 +189,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             x: GKRandomDistribution(lowestValue: 70, highestValue: Int(size.width - 70)).nextInt(),
             y: yPosition
         )
-        platform.setScale(0.3)
+//        platform.setScale(0.3)
+//        platform.setScale(0.15)
+        platform.setScale(0.25)
         platform.zPosition = 5
-        let hitboxSize = CGSize(width: platform.size.width, height: platform.size.height * 0.8) // Adjust height (80% of the sprite's height)
+        let hitboxSize = CGSize(width: platform.size.width, height: platform.size.height) // Adjust height (80% of the sprite's height)
         let hitboxCenter = CGPoint(x: 0, y: -platform.size.height * 0.2) // Lower by 10% of the sprite's height
 
         platform.physicsBody = SKPhysicsBody(rectangleOf: hitboxSize, center: hitboxCenter)
@@ -229,14 +232,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 platform.run(repeatMovement)
                 
             case 2:
-                let movementDistance: CGFloat = CGFloat.random(in: 50...150 + CGFloat(score))
-                let movementDuration: TimeInterval = max(0.5, 4.0 - Double(score) * 0.1)
-                let moveLeft = SKAction.moveBy(x: -movementDistance, y: 0, duration: movementDuration)
-                let moveRight = SKAction.moveBy(x: movementDistance, y: 0, duration: movementDuration)
-                let pause = SKAction.wait(forDuration: TimeInterval.random(in: 0.5...2.0))
-                let movementSequence = SKAction.sequence([moveLeft, pause, moveRight, pause])
-                let repeatMovement = SKAction.repeatForever(movementSequence)
-                platform.run(repeatMovement)
+                configurePlatformMovement(platform: platform, score: score)
                 
             case 3:
                 break
@@ -259,7 +255,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 x: GKRandomDistribution(lowestValue: 70, highestValue: Int(size.width - 70)).nextInt(),
                 y: Int(player.position.y) + i * spacing
             )
-            platform.setScale(0.3)
+//            platform.setScale(0.3)
+//            platform.setScale(0.15)
+            platform.setScale(0.25)
             platform.zPosition = 5
             platform.physicsBody = SKPhysicsBody(rectangleOf: platform.size)
             platform.physicsBody?.isDynamic = false
@@ -289,5 +287,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         scoreLabel.text = "Score: \(score)"
+    }
+    
+    func configurePlatformMovement(platform: SKSpriteNode, score: Int) {
+        // Calculate movement bounds dynamically
+        let leftBound = platform.size.width / 2
+        let rightBound = size.width - platform.size.width / 2
+        
+        // Calculate movement distance
+        let movementDistance = CGFloat.random(in: 75...300 + CGFloat(score))
+        let adjustedDistance = min(movementDistance, platform.position.x - leftBound, rightBound - platform.position.x)
+        
+        // Define movement actions
+        let movementDuration: TimeInterval = max(0.2, 4.0 - Double(score) * 0.0005)
+        print("Configuring movement for platform with:")
+        let moveLeft = SKAction.moveBy(x: -adjustedDistance, y: 0, duration: movementDuration)
+        let moveRight = SKAction.moveBy(x: adjustedDistance, y: 0, duration: movementDuration)
+        let pause = SKAction.wait(forDuration: TimeInterval.random(in: 0.5...2.0))
+        
+        // Sequence: Move left, pause, move right, pause
+        let movementSequence = SKAction.sequence([moveLeft, pause, moveRight, pause])
+        let repeatMovement = SKAction.repeatForever(movementSequence)
+        
+        // Apply the movement action to the platform
+        platform.run(repeatMovement)
     }
 }
