@@ -8,6 +8,7 @@
 import SwiftUI
 import SpriteKit
 import GameplayKit
+import CoreMotion
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     let background = SKSpriteNode(imageNamed: "background")
@@ -32,6 +33,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         case platform = 0b10
         case gameOverLine
     }
+    
+    let motionManager = CMMotionManager()
     
     override func didMove(to view: SKView) {
         self.size = CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
@@ -87,6 +90,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         cam.setScale(1)
         cam.position = CGPoint(x: size.width / 2, y: size.height / 2)
         camera = cam
+        
+        motionManager.startAccelerometerUpdates()
+        motionManager.startAccelerometerUpdates(to: OperationQueue.main) { [weak self] data, error in
+            guard let self = self, let accelerometerData = data else { return }
+            
+            let tiltThreshold: CGFloat = 0.01 // Adjust sensitivity if needed
+            let tilt = CGFloat(accelerometerData.acceleration.x)
+            
+            // Apply tilt to player's position
+            if abs(tilt) > tiltThreshold {
+                self.player.position.x += tilt * 20 // Adjust multiplier for speed
+            }
+            
+            // Keep the player within screen bounds
+            if self.player.position.x < 0 {
+                self.player.position.x = 0
+            } else if self.player.position.x > self.size.width {
+                self.player.position.x = self.size.width
+            }
+        }
         
         setupInitialPlatforms()
     }
@@ -153,13 +176,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for touch in touches {
-            let lokation = touch.location(in: self)
-            
-            player.position.x = lokation.x
-        }
-    }
+//    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+//        for touch in touches {
+//            let lokation = touch.location(in: self)
+//            
+//            player.position.x = lokation.x
+//        }
+//    }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         player.physicsBody?.isDynamic = true
@@ -189,12 +212,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             x: GKRandomDistribution(lowestValue: 70, highestValue: Int(size.width - 70)).nextInt(),
             y: yPosition
         )
-//        platform.setScale(0.3)
-//        platform.setScale(0.15)
         platform.setScale(0.25)
         platform.zPosition = 5
-        let hitboxSize = CGSize(width: platform.size.width, height: platform.size.height) // Adjust height (80% of the sprite's height)
-        let hitboxCenter = CGPoint(x: 0, y: -platform.size.height * 0.2) // Lower by 10% of the sprite's height
+        let hitboxSize = CGSize(width: platform.size.width, height: platform.size.height)
+        let hitboxCenter = CGPoint(x: 0, y: -platform.size.height * 0.2)
 
         platform.physicsBody = SKPhysicsBody(rectangleOf: hitboxSize, center: hitboxCenter)
         platform.physicsBody?.isDynamic = false
@@ -206,10 +227,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         platform.name = "platform"
         
         if score > 500{
-            let shouldMove = Bool.random() // Randomly decide if this platform should move
+            let shouldMove = Bool.random()
             if shouldMove {
-                let movementDistance: CGFloat = CGFloat.random(in: 50...150) // Movement range
-                let movementDuration: TimeInterval = TimeInterval.random(in: 0.3...2.0) // Movement speed
+                let movementDistance: CGFloat = CGFloat.random(in: 50...150)
+                let movementDuration: TimeInterval = TimeInterval.random(in: 0.3...2.0)
                 let moveLeft = SKAction.moveBy(x: -movementDistance, y: 0, duration: movementDuration)
                 let moveRight = SKAction.moveBy(x: movementDistance, y: 0, duration: movementDuration)
                 let movementSequence = SKAction.sequence([moveLeft, moveRight])
@@ -223,8 +244,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             switch movementType {
             case 1:
-                let movementDistance: CGFloat = CGFloat.random(in: 50...150) // Movement range
-                let movementDuration: TimeInterval = TimeInterval.random(in: 0.3...2.0) // Movement speed
+                let movementDistance: CGFloat = CGFloat.random(in: 50...150)
+                let movementDuration: TimeInterval = TimeInterval.random(in: 0.3...2.0)
                 let moveLeft = SKAction.moveBy(x: -movementDistance, y: 0, duration: movementDuration)
                 let moveRight = SKAction.moveBy(x: movementDistance, y: 0, duration: movementDuration)
                 let movementSequence = SKAction.sequence([moveLeft, moveRight])
@@ -243,6 +264,30 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
 
         addChild(platform)
+    }
+    
+    func configurePlatformMovement(platform: SKSpriteNode, score: Int) {
+        // Calculate movement bounds dynamically
+        let leftBound = platform.size.width / 2
+        let rightBound = size.width - platform.size.width / 2
+        
+        // Calculate movement distance
+        let movementDistance = CGFloat.random(in: 75...300 + CGFloat(score))
+        let adjustedDistance = min(movementDistance, platform.position.x - leftBound, rightBound - platform.position.x)
+        
+        // Define movement actions
+        let movementDuration: TimeInterval = max(0.2, 4.0 - Double(score) * 0.0005)
+        print("Configuring movement for platform with:")
+        let moveLeft = SKAction.moveBy(x: -adjustedDistance, y: 0, duration: movementDuration)
+        let moveRight = SKAction.moveBy(x: adjustedDistance, y: 0, duration: movementDuration)
+        let pause = SKAction.wait(forDuration: TimeInterval.random(in: 0.5...2.0))
+        
+        // Sequence: Move left, pause, move right, pause
+        let movementSequence = SKAction.sequence([moveLeft, pause, moveRight, pause])
+        let repeatMovement = SKAction.repeatForever(movementSequence)
+        
+        // Apply the movement action to the platform
+        platform.run(repeatMovement)
     }
     
     func setupInitialPlatforms() {
@@ -288,28 +333,5 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         scoreLabel.text = "Score: \(score)"
     }
-    
-    func configurePlatformMovement(platform: SKSpriteNode, score: Int) {
-        // Calculate movement bounds dynamically
-        let leftBound = platform.size.width / 2
-        let rightBound = size.width - platform.size.width / 2
-        
-        // Calculate movement distance
-        let movementDistance = CGFloat.random(in: 75...300 + CGFloat(score))
-        let adjustedDistance = min(movementDistance, platform.position.x - leftBound, rightBound - platform.position.x)
-        
-        // Define movement actions
-        let movementDuration: TimeInterval = max(0.2, 4.0 - Double(score) * 0.0005)
-        print("Configuring movement for platform with:")
-        let moveLeft = SKAction.moveBy(x: -adjustedDistance, y: 0, duration: movementDuration)
-        let moveRight = SKAction.moveBy(x: adjustedDistance, y: 0, duration: movementDuration)
-        let pause = SKAction.wait(forDuration: TimeInterval.random(in: 0.5...2.0))
-        
-        // Sequence: Move left, pause, move right, pause
-        let movementSequence = SKAction.sequence([moveLeft, pause, moveRight, pause])
-        let repeatMovement = SKAction.repeatForever(movementSequence)
-        
-        // Apply the movement action to the platform
-        platform.run(repeatMovement)
-    }
 }
+
