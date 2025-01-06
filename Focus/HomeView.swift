@@ -15,6 +15,7 @@ struct HomeView: View {
     @State var isBreak: Bool = false
     @State var soundMenu: Bool = false
     @State var playing: Bool = false
+    @State var isGame: Bool = false
     
     @StateObject private var audioPlayer = AudioPlayer()
     
@@ -40,6 +41,22 @@ struct HomeView: View {
                                     .frame(width: 100, height: 50)
                                 
                                 Text("Resume Focus")
+                                    .font(.custom("SourceCodePro-Bold", size: 16))
+                                    .foregroundStyle(Color.black)
+                            }
+                        }
+                        .frame(width: 75, height: 50)
+                        .padding()
+                        
+                        Button {
+                            isGame = true
+                        } label: {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .foregroundStyle(Color.green)
+                                    .frame(width: 100, height: 50)
+                                
+                                Text("Play")
                                     .font(.custom("SourceCodePro-Bold", size: 16))
                                     .foregroundStyle(Color.black)
                             }
@@ -116,9 +133,12 @@ struct HomeView: View {
             }
             .onAppear {
                 breakTimerViewModel.isCooldownActive = true
-                breakTimerViewModel.startCooldown(cooldownMinutes: 15)
+                breakTimerViewModel.startCooldown(cooldownMinutes: 0)
                 focusTimerViewModel.totalSeconds = Int(minutes * 60)
             }
+        }
+        .fullScreenCover(isPresented: $isGame) {
+            GameView()
         }
     }
 }
