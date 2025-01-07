@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct LoginView: View {
-    @State var username: String = ""
+    @State var email: String = ""
     @State var password: String = ""
     @State var signUp: Bool = false
     @State var header: String = ""
@@ -22,15 +22,18 @@ struct LoginView: View {
             Color.fPrimary.ignoresSafeArea()
             
             VStack {
-                Text(header)
-                    .font(.custom("SourceCodePro-Bold", size: 50))
-                    .foregroundStyle(Color.fText)
-                    .onReceive(timer) { _ in
-                        if header.count < text.count {
-                            let index = text.index(text.startIndex, offsetBy: header.count)
-                            header.append(text[index])
+                VStack {
+                    Text(header)
+                        .font(.custom("SourceCodePro-Bold", size: 50))
+                        .foregroundStyle(Color.fText)
+                        .onReceive(timer) { _ in
+                            if header.count < text.count {
+                                let index = text.index(text.startIndex, offsetBy: header.count)
+                                header.append(text[index])
+                            }
                         }
-                    }
+                }
+                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height * 0.2)
                 
                 VStack(spacing: 15) {
                     ZStack {
@@ -38,7 +41,7 @@ struct LoginView: View {
                             .frame(width: UIScreen.main.bounds.width * 0.8, height: 40)
                             .foregroundStyle(Color.fText)
                         
-                        TextField("Username", text: $username)
+                        TextField("Email", text: $email)
                             .frame(width: UIScreen.main.bounds.width * 0.8, height: 40)
                             .foregroundStyle(Color.black)
                             .padding(.leading, 10)
@@ -61,7 +64,7 @@ struct LoginView: View {
                 Button {
                     Task {
                         do {
-                            try await authModel.signInWithEmail(email: username, password: password)
+                            try await authModel.signInWithEmail(email: email, password: password)
                             await authModel.isUserAuthenticated()
                         } catch {
                             authModel.errorMessage = "Failed to log in: \(error.localizedDescription)"
@@ -98,7 +101,8 @@ struct LoginView: View {
             SignupView(signup: $signUp)
         }
         .fullScreenCover(isPresented: $authModel.isLoggedIn) {
-            ContentView()
+//            ContentView()
+            SignedInPopupView()
         }
     }
 }

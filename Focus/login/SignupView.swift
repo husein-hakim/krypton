@@ -8,8 +8,11 @@
 import SwiftUI
 
 struct SignupView: View {
-    @State var username: String = ""
+    @State var email: String = ""
     @State var password: String = ""
+    @State var username: String = ""
+    @State var pfp: PfpList = .krypton
+    @State var selectPfp: Bool = false
     @Binding var signup: Bool
     @State var header: String = ""
     let text = "Welcome to Krypton"
@@ -22,27 +25,51 @@ struct SignupView: View {
             Color.fPrimary.ignoresSafeArea()
             
             VStack {
-                Text(header)
-                    .font(.custom("SourceCodePro-Bold", size: 50))
-                    .foregroundStyle(Color.fText)
-                    .onReceive(timer) { _ in
-                        if header.count < text.count {
-                            let index = text.index(text.startIndex, offsetBy: header.count)
-                            header.append(text[index])
+                VStack {
+                    Text(header)
+                        .font(.custom("SourceCodePro-Bold", size: 50))
+                        .foregroundStyle(Color.fText)
+                        .onReceive(timer) { _ in
+                            if header.count < text.count {
+                                let index = text.index(text.startIndex, offsetBy: header.count)
+                                header.append(text[index])
+                            }
                         }
-                    }
+                }
+                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height * 0.2)
                 
                 VStack(spacing: 15) {
+                    Image(pfp.rawValue)
+                        .resizable()
+                        .frame(width: 100, height: 100)
+                        .scaledToFit()
+                        .clipShape(Circle())
+                        .onTapGesture {
+                            selectPfp = true
+                        }
+                    
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
                             .frame(width: UIScreen.main.bounds.width * 0.8, height: 40)
                             .foregroundStyle(Color.fText)
                         
-                        TextField("Username", text: $username)
+                        TextField("Email", text: $email)
                             .frame(width: UIScreen.main.bounds.width * 0.8, height: 40)
                             .foregroundStyle(Color.black)
                             .padding(.leading, 10)
                             .font(.custom("SourceCodePro-Regular", size: 18))
+                    }
+                    
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .frame(width: UIScreen.main.bounds.width * 0.8, height: 40)
+                            .foregroundStyle(Color.fText)
+                        
+                        SecureField("Username", text: $username)
+                            .frame(width: UIScreen.main.bounds.width * 0.8, height: 40)
+                            .foregroundStyle(Color.black)
+                            .padding(.leading, 10)
+                            .font(.custom("SourceCodePro", size: 18))
                     }
                     
                     ZStack {
@@ -61,7 +88,7 @@ struct SignupView: View {
                 Button {
                     Task {
                         do {
-                            try await authModel.registerNewUser(email: username, password: password)
+                            try await authModel.registerNewUser(email: email, password: password, username: username, profile: pfp.rawValue)
                             await authModel.isUserAuthenticated()
                         } catch {
                             authModel.errorMessage = "Failed to create Account: \(error.localizedDescription)"
@@ -97,6 +124,10 @@ struct SignupView: View {
         }
         .fullScreenCover(isPresented: $authModel.isLoggedIn) {
             ContentView()
+        }
+        .sheet(isPresented: $selectPfp) {
+            ProfileSelectionView(pfp: $pfp)
+                .presentationDetents([.medium])
         }
     }
 }
