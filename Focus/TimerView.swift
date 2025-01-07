@@ -66,7 +66,7 @@ struct TimerView: View {
                         .presentationDetents([.medium])
                 })
                 .padding()
-                
+        
                 Spacer()
             }
         }
