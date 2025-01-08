@@ -65,7 +65,7 @@ struct SignupView: View {
                             .frame(width: UIScreen.main.bounds.width * 0.8, height: 40)
                             .foregroundStyle(Color.fText)
                         
-                        SecureField("Username", text: $username)
+                        SecureField("Password", text: $password)
                             .frame(width: UIScreen.main.bounds.width * 0.8, height: 40)
                             .foregroundStyle(Color.black)
                             .padding(.leading, 10)
@@ -77,11 +77,11 @@ struct SignupView: View {
                             .frame(width: UIScreen.main.bounds.width * 0.8, height: 40)
                             .foregroundStyle(Color.fText)
                         
-                        SecureField("Password", text: $password)
+                        TextField("Username", text: $username)
                             .frame(width: UIScreen.main.bounds.width * 0.8, height: 40)
                             .foregroundStyle(Color.black)
                             .padding(.leading, 10)
-                            .font(.custom("SourceCodePro", size: 18))
+                            .font(.custom("SourceCodePro-Regular", size: 18))
                     }
                 }
                 
@@ -123,7 +123,7 @@ struct SignupView: View {
             }
         }
         .fullScreenCover(isPresented: $authModel.isLoggedIn) {
-            ContentView()
+            SignedInPopupView()
         }
         .sheet(isPresented: $selectPfp) {
             ProfileSelectionView(pfp: $pfp)

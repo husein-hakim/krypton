@@ -13,6 +13,7 @@ class AuthModel: ObservableObject {
     
     @Published var isLoggedIn = false
     @Published var errorMessage: String? = nil
+    @Published var userProfile: [User] = []
     
     init() {
         let supabaseURL = Secrets.SUPABASE_URL
@@ -74,37 +75,46 @@ class AuthModel: ObservableObject {
         }
     }
     
-    func getInitialProfile() async {
+//    func getInitialProfile() async {
+//        var profiles: [User] = []
+//        do {
+//            let currentUser = try await client.auth.session.user.id
+//            profiles = try await client.from("Users").select().eq("id", value: currentUser).execute().value
+//            print(profiles)
+//            userProfile = profiles
+//        } catch {
+//            print("error occured:\(error.localizedDescription)")
+//        }
+//    }
+    
+    func getInitialProfile(completion: @escaping([User]) -> Void) async throws {
+        var profiles: [User] = []
         do {
-            let currentUser = try await client.auth.session.user
-            let currentUserId = currentUser.id
-            
-            print(currentUserId)
-            
-            let response = try await client.from("Users")
-                .select("*")
-                .eq("id", value: currentUserId)
-                .limit(1)
-                .execute()
-            
-            print(response)
-            
-            // Response.data is typically an array of records
-            if let records = response.data as? [[String: Any]],
-               let userData = records.first { // Get first record since we used limit(1)
-                let user = User(
-                    id: userData["id"] as! UUID,
-                    email: userData["email"] as! String,
-                    password: userData["password"] as! String,
-                    username: userData["username"] as! String,
-                    profile: userData["profile"] as! String
-                )
-                print("user found: \(user)")
+            let currentUser = try await client.auth.session.user.id
+            profiles = try await client.from("Users").select().eq("id", value: currentUser).execute().value
+            userProfile = profiles
+            completion(profiles)
+        } catch {
+            print("error occured:\(error.localizedDescription)")
+        }
+    }
+    
+    func getProfile() async throws {
+        do {
+            let currentUser = try await client.auth.session.user.id
+            userProfile = try await client.from("Users").select().eq("id", value: currentUser).execute().value
+        }
+    }
+    
+    func checkIfLoggedIn() async throws -> Bool {
+        do {
+            if try await client.auth.session.user != nil {
+                return true
             } else {
-                print("user not found. Response: \(response) Data: \(String(describing: response.data))")
+                return false
             }
         } catch {
-            debugPrint(error)
+            return false
         }
     }
 }

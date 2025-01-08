@@ -10,11 +10,28 @@ import DeviceActivity
 
 @main
 struct FocusApp: App {
+    @StateObject var authModel = AuthModel()
+    @StateObject var appState = AppState()
     var body: some Scene {
         WindowGroup {
             //GameView()
             //ContentView()
-            LoginView()
+            Group {
+                switch appState.authState {
+                case .checking:
+                    Text("checking")
+                    
+                case .loggedIn:
+                    ContentView()
+                        .environmentObject(authModel)
+                    
+                case .loggedOut:
+                    LoginView()
+                }
+            }
+            .onAppear {
+                appState.checkAuthStatus()
+            }
         }
     }
 }

@@ -66,6 +66,11 @@ struct TimerView: View {
                         .presentationDetents([.medium])
                 })
                 .padding()
+                
+                Text("You will earn: \(String(format: "%.0f", floor(timer/15)))")
+                    .font(.custom("SourceCodePro-Regular", size: 18))
+                    .foregroundStyle(Color.fText)
+                
         
                 Spacer()
             }
