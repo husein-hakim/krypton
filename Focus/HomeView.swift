@@ -18,6 +18,9 @@ struct HomeView: View {
     @State var isGame: Bool = false
     
     @StateObject private var audioPlayer = AudioPlayer()
+    @StateObject var focusSessionManager = FocusSessionsManager()
+    
+    @Environment(\.scenePhase) var scenePhase
     
     var body: some View {
         NavigationStack {
@@ -98,7 +101,6 @@ struct HomeView: View {
                     }
                     
                     Button {
-                        isFocus = false
                     } label: {
                         ZStack {
                             RoundedRectangle(cornerRadius: 10)
@@ -135,6 +137,30 @@ struct HomeView: View {
                 breakTimerViewModel.isCooldownActive = true
                 breakTimerViewModel.startCooldown(cooldownMinutes: 0)
                 focusTimerViewModel.totalSeconds = Int(minutes * 60)
+                UIApplication.shared.isIdleTimerDisabled = true
+                focusTimerViewModel.onTimerComplete = {
+                    Task {
+                        do {
+                            try await focusSessionManager.createFocusSession(duration: Int(minutes), kryptons_earned: Int(floor(minutes/15)))
+                            isFocus = false
+                        } catch {
+                            print("error initializing focus session upload")
+                        }
+                    }
+                }
+            }
+            .onChange(of: scenePhase) { newPhase in
+                switch newPhase {
+                case .background:
+                    focusTimerViewModel.stopTimer()
+                    isFocus = false
+                    
+                case .active:
+                    focusTimerViewModel.startTimer()
+                    
+                default:
+                    break
+                }
             }
         }
         .fullScreenCover(isPresented: $isGame) {

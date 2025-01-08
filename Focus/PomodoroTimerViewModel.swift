@@ -31,6 +31,14 @@ class PomodoroTimerViewModel: ObservableObject {
         self.breakSessionDuration = Int(breakMinutes * 60)
         startWorkSession()
     }
+    
+    func updateDurations(workMinutes: Int, breakMinutes: Int) {
+        self.workSessionDuration = workMinutes * 60
+        self.breakSessionDuration = breakMinutes * 60
+        self.totalSeconds = isWorkSession ? workSessionDuration : breakSessionDuration
+        self.elapsedSeconds = 0
+        updateTimeComponents()
+    }
 
     func startWorkSession() {
         isWorkSession = true

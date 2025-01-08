@@ -17,6 +17,8 @@ class CircularTimerViewModel: ObservableObject {
     private var elapsedSeconds: Int = 0
     private var timer: AnyCancellable?
     
+    var onTimerComplete: (() -> Void)?
+    
     init(totalMinutes: Double) {
         self.totalSeconds = Int(totalMinutes * 60)
         updateTimeComponents()
@@ -32,7 +34,8 @@ class CircularTimerViewModel: ObservableObject {
     
     private func tick() {
         guard elapsedSeconds < totalSeconds else {
-            timer?.cancel() // Stop the timer when completed
+            timer?.cancel()
+            onTimerComplete?()// Stop the timer when completed
             return
         }
         
