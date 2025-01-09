@@ -56,7 +56,7 @@ struct HomeView: View {
                         } label: {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 10)
-                                    .foregroundStyle(Color.green)
+                                    .foregroundStyle(Color.fSecondary)
                                     .frame(width: 100, height: 50)
                                 
                                 Text("Play")
@@ -135,7 +135,7 @@ struct HomeView: View {
             }
             .onAppear {
                 breakTimerViewModel.isCooldownActive = true
-                breakTimerViewModel.startCooldown(cooldownMinutes: 0)
+                breakTimerViewModel.startCooldown(cooldownMinutes: 5)
                 focusTimerViewModel.totalSeconds = Int(minutes * 60)
                 UIApplication.shared.isIdleTimerDisabled = true
                 focusTimerViewModel.onTimerComplete = {

@@ -10,7 +10,7 @@ import Foundation
 
 struct PomodoroTimerView: View {
     @State var isStarted: Bool = false
-    @State var workMinutes: Int = 15
+    @State var workMinutes: Int = 5
     @State var breakMinutes: Int = 5
     
     var body: some View {
@@ -82,6 +82,10 @@ struct PomodoroSetupView: View {
                 }
                 .frame(width: 125, height: 35)
                 
+                Text("Each Session you will earn: \(String(format: "%.0f", floor(Double(workMinutes/15)))) kryptons")
+                    .font(.custom("SourceCodePro-Regular", size: 18))
+                    .foregroundStyle(Color.fText)
+                
                 Spacer()
             }
         }
@@ -93,6 +97,7 @@ struct PomodoroView: View {
     @State var breakMinutes: Int
     @Binding var isStarted: Bool
     @StateObject var timerViewModel = PomodoroTimerViewModel(workMinutes: 15, breakMinutes: 5)
+    @State var isGame: Bool = false
     @Environment(\.scenePhase) var scenePhase
 
     var body: some View {
@@ -112,18 +117,43 @@ struct PomodoroView: View {
                         Rectangle()
                             .frame(height: timerViewModel.variableProgress * UIScreen.main.bounds.height)
                             .animation(.linear(duration: TimeInterval(timerViewModel.isWorkSession ? timerViewModel.totalSeconds : timerViewModel.breakSessionDuration)), value: timerViewModel.variableProgress)
-                           .ignoresSafeArea()
+                            .ignoresSafeArea()
                     }
                 )
             
             VStack {
                 HStack {
                     Text("\(timerViewModel.minutesLeft)")
+                        .font(.custom("SourceCodePro-Bold", size: 30))
+                        .foregroundStyle(Color.fText)
                     Text(":")
+                        .font(.custom("SourceCodePro-Bold", size: 30))
+                        .foregroundStyle(Color.fText)
                     Text("\(timerViewModel.secondsLeft)")
+                        .font(.custom("SourceCodePro-Bold", size: 30))
+                        .foregroundStyle(Color.fText)
                 }
                 
-                Text(timerViewModel.isWorkSession ? "Work" : "Break")
+                Text(timerViewModel.isWorkSession ? "Keep Working!" : "Time to rest")
+                    .foregroundStyle(Color.fText)
+                    .font(.custom("SourceCodePro-Bold", size: 25))
+                
+                if !timerViewModel.isWorkSession {
+                    Button {
+                        isGame = true
+                    } label: {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10)
+                                .foregroundStyle(Color.fTertiary)
+                                .frame(width: 100, height: 50)
+                            
+                            Text("Play")
+                                .font(.custom("SourceCodePro-Bold", size: 16))
+                                .foregroundStyle(Color.black)
+                        }
+                    }
+
+                }
             }
         }
         .onAppear {
@@ -142,6 +172,9 @@ struct PomodoroView: View {
             default:
                 break
             }
+        }
+        .fullScreenCover(isPresented: $isGame) {
+            GameView()
         }
     }
 }

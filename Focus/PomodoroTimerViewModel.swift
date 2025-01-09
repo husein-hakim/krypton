@@ -77,8 +77,11 @@ class PomodoroTimerViewModel: ObservableObject {
         }
 
         elapsedSeconds += 1
-        progress = (Double(elapsedSeconds) / Double(totalSeconds)) + 0.1
+        progress = (Double(elapsedSeconds) / Double(totalSeconds))
         updateTimeComponents()
+        
+        print("elapsedSeconds: \(elapsedSeconds)")
+        print("progress: \(progress)")
     }
 
     private func updateTimeComponents() {

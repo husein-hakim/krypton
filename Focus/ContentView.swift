@@ -17,6 +17,10 @@ struct ContentView: View {
     }
     @State var mode: Mode = .timer
     @State var isLoading: Bool = false
+    @State var isMenuOpen: Bool = false
+    
+    @State private var menuOffset: CGFloat = 0
+    private let menuWidth: CGFloat = 300
     
     var body: some View {
         ZStack {
@@ -26,7 +30,9 @@ struct ContentView: View {
                 VStack {
                     HStack {
                         Button {
-                            
+                            withAnimation {
+                                isMenuOpen.toggle()
+                            }
                         } label: {
                             Image(systemName: "line.3.horizontal")
                                 .resizable()
@@ -39,11 +45,11 @@ struct ContentView: View {
                         Spacer()
                         
                         Picker("mode selection", selection: $mode) {
-                            ForEach(Mode.allCases, id: \.self) { mode in
+                            ForEach(Mode.allCases, id: \.self) { currentMode in
                                 Button {
-                                    
+                                    mode = currentMode
                                 } label: {
-                                    Image(systemName: mode.rawValue)
+                                    Image(systemName: currentMode.rawValue)
                                         .foregroundStyle(Color.fPrimary)
                                 }
                             }
@@ -69,6 +75,41 @@ struct ContentView: View {
                     } else {
                         PomodoroTimerView()
                     }
+                }
+                .disabled(isMenuOpen)
+                .offset(x: isMenuOpen ? 300 : 0)
+                .opacity(isMenuOpen ? 0.3 : 1.0)
+                .gesture(
+                    DragGesture()
+                        .onChanged { gesture in
+                            if gesture.translation.width > 0 { // Only allow right swipe
+                                menuOffset = gesture.translation.width
+                            }
+                        }
+                        .onEnded { gesture in
+                            withAnimation(.spring(response: 0.4, dampingFraction: 1.0)) {
+                                if gesture.translation.width > menuWidth/4 {
+                                    menuOffset = menuWidth
+                                    isMenuOpen = true
+                                } else {
+                                    menuOffset = 0
+                                    isMenuOpen = false
+                                }
+                            }
+                        }
+                )
+                
+                if isMenuOpen {
+                    GeometryReader { geometry in
+                        HStack(spacing: 0) {
+                            SideView(isMenuOpen: $isMenuOpen, userProfile: authModel.userProfile[0])
+                                .frame(width: 300)
+                                .offset(x: isMenuOpen ? 0 : -300)
+                            
+                            Spacer()
+                        }
+                    }
+                    .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isMenuOpen)
                 }
             }
         }
