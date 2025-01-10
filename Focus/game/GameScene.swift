@@ -12,7 +12,7 @@ import CoreMotion
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     let background = SKSpriteNode(imageNamed: "background")
-    let player = SKSpriteNode(imageNamed: "sharky")
+    let player = SKSpriteNode(imageNamed: "krypton")
     let ground = SKSpriteNode(imageNamed: "land-grass")
     let gameOverLine = SKSpriteNode(color: .red, size: CGSize(width: 1000, height: 10))
     var firstTouch: Bool = false

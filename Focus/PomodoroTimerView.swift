@@ -8,24 +8,24 @@
 import SwiftUI
 import Foundation
 
-struct PomodoroTimerView: View {
-    @State var isStarted: Bool = false
-    @State var workMinutes: Int = 5
-    @State var breakMinutes: Int = 5
-    
-    var body: some View {
-        if isStarted {
-            PomodoroView(workMinutes: workMinutes, breakMinutes: breakMinutes, isStarted: $isStarted)
-        } else {
-            PomodoroSetupView(workMinutes: $workMinutes, breakMinutes: $breakMinutes, isStarted: $isStarted)
-        }
-    }
-}
+//struct PomodoroTimerView: View {
+//    @State var isStarted: Bool = false
+//    @State var workMinutes: Int = 5
+//    @State var breakMinutes: Int = 5
+//    
+//    var body: some View {
+//        if isStarted {
+//            PomodoroView(workMinutes: workMinutes, breakMinutes: breakMinutes, isStarted: $isStarted)
+//        } else {
+//            PomodoroSetupView(workMinutes: $workMinutes, breakMinutes: $breakMinutes, isStarted: $isStarted)
+//        }
+//    }
+//}
 
-struct PomodoroSetupView: View {
-    @Binding var workMinutes: Int
-    @Binding var breakMinutes: Int
-    @Binding var isStarted: Bool
+struct PomodoroTimerView: View {
+    @State var workMinutes: Int = 1
+    @State var breakMinutes: Int = 1
+    @State var isStarted: Bool = false
     var body: some View {
         ZStack {
             Color.fPrimary.ignoresSafeArea()
@@ -89,6 +89,9 @@ struct PomodoroSetupView: View {
                 Spacer()
             }
         }
+        .fullScreenCover(isPresented: $isStarted) {
+            PomodoroView(workMinutes: workMinutes, breakMinutes: breakMinutes, isStarted: $isStarted)
+        }
     }
 }
 
@@ -107,19 +110,24 @@ struct PomodoroView: View {
                 .foregroundStyle(Color.fPrimary)
                 .ignoresSafeArea()
             
-            Rectangle()
-                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
-                .foregroundStyle(Color.fSecondary)
-                .ignoresSafeArea()
-                .mask(
-                    VStack {
-                        Spacer()
-                        Rectangle()
-                            .frame(height: timerViewModel.variableProgress * UIScreen.main.bounds.height)
-                            .animation(.linear(duration: TimeInterval(timerViewModel.isWorkSession ? timerViewModel.totalSeconds : timerViewModel.breakSessionDuration)), value: timerViewModel.variableProgress)
-                            .ignoresSafeArea()
-                    }
-                )
+            VStack {
+                
+                Spacer()
+                
+                Rectangle()
+                    .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                    .foregroundStyle(Color.fSecondary)
+                    .ignoresSafeArea()
+                    .mask(
+                        VStack {
+                            Spacer()
+                            Rectangle()
+                                .frame(height: timerViewModel.variableProgress * (UIScreen.main.bounds.height*1.05))
+                                .animation(.linear(duration: TimeInterval(timerViewModel.isWorkSession ? timerViewModel.totalSeconds : timerViewModel.breakSessionDuration)), value: timerViewModel.variableProgress)
+                                .ignoresSafeArea()
+                        }
+                    )
+            }
             
             VStack {
                 HStack {

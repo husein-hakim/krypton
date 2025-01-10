@@ -69,6 +69,21 @@ class PomodoroTimerViewModel: ObservableObject {
             }
     }
 
+//    private func tick() {
+//        guard elapsedSeconds < totalSeconds else {
+//            timer?.cancel()
+//            switchToNextSession()
+//            return
+//        }
+//
+//        elapsedSeconds += 1
+//        progress = (Double(elapsedSeconds) / Double(totalSeconds))
+//        updateTimeComponents()
+//        
+//        print("elapsedSeconds: \(elapsedSeconds)")
+//        print("progress: \(progress)")
+//    }
+    
     private func tick() {
         guard elapsedSeconds < totalSeconds else {
             timer?.cancel()
@@ -77,11 +92,14 @@ class PomodoroTimerViewModel: ObservableObject {
         }
 
         elapsedSeconds += 1
+
+        // Update progress using precise division
         progress = (Double(elapsedSeconds) / Double(totalSeconds))
+
         updateTimeComponents()
-        
-        print("elapsedSeconds: \(elapsedSeconds)")
-        print("progress: \(progress)")
+
+        // Debugging
+        print("elapsedSeconds: \(elapsedSeconds), progress: \(progress)")
     }
 
     private func updateTimeComponents() {
