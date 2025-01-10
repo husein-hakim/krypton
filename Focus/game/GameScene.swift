@@ -162,13 +162,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             contactA.node?.removeFromParent()
         }
         
-        if contactA.categoryBitMask == bitmasks.player.rawValue && contactB.categoryBitMask == bitmasks.platform.rawValue {
-            if player.physicsBody!.velocity.dy < 0 {
-                player.physicsBody?.velocity = CGVector(dx: (player.physicsBody!.velocity.dx), dy: 1150)
-                contactB.node?.removeFromParent()
-                updateScore()
-                audioPlayer.playSoundOnce(fileName: "jump", fileType: ".mp3")
+        if player.physicsBody!.velocity.dy < 0 {
+            player.physicsBody?.velocity = CGVector(dx: (player.physicsBody!.velocity.dx), dy: 1150)
+            
+            // Animate the platform before removing it
+            if let platformNode = contactB.node {
+                let fadeOut = SKAction.fadeOut(withDuration: 0.5) // Adjust duration as needed
+                let scaleDown = SKAction.scale(to: 0.1, duration: 0.5) // Shrink the platform
+                let group = SKAction.group([fadeOut, scaleDown])
+                let remove = SKAction.removeFromParent()
+                let sequence = SKAction.sequence([group, remove])
+                platformNode.run(sequence)
             }
+            
+            updateScore()
+            audioPlayer.playSoundOnce(fileName: "jump", fileType: ".mp3")
         }
         
         if contactA.categoryBitMask == bitmasks.player.rawValue && contactB.categoryBitMask == bitmasks.gameOverLine.rawValue {

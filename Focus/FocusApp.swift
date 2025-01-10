@@ -22,8 +22,10 @@ struct FocusApp: App {
                     Text("checking")
                     
                 case .loggedIn:
-                    ContentView()
-                        .environmentObject(authModel)
+//                    ContentView()
+//                        .environmentObject(authModel)
+                    
+                    GameView()
                     
                 case .loggedOut:
                     LoginView()
