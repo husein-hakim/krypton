@@ -62,6 +62,21 @@ struct SideView: View {
                 .foregroundColor(.white)
             }
             .padding(.vertical, 8)
+            
+            Button(action: {
+                Task {
+                    try await authModel.signOut()
+                }
+            }) {
+                HStack {
+                    Image(systemName: "gear")
+                        .frame(width: 24)
+                    Text("Sign out")
+                    Spacer()
+                }
+                .foregroundColor(.white)
+            }
+            .padding(.vertical, 8)
         }
         .padding()
         .frame(maxHeight: .infinity)

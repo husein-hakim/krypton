@@ -8,24 +8,13 @@
 import SwiftUI
 import Foundation
 
-//struct PomodoroTimerView: View {
-//    @State var isStarted: Bool = false
-//    @State var workMinutes: Int = 5
-//    @State var breakMinutes: Int = 5
-//    
-//    var body: some View {
-//        if isStarted {
-//            PomodoroView(workMinutes: workMinutes, breakMinutes: breakMinutes, isStarted: $isStarted)
-//        } else {
-//            PomodoroSetupView(workMinutes: $workMinutes, breakMinutes: $breakMinutes, isStarted: $isStarted)
-//        }
-//    }
-//}
-
 struct PomodoroTimerView: View {
     @State var workMinutes: Int = 1
     @State var breakMinutes: Int = 1
     @State var isStarted: Bool = false
+    @State var selectedKrypton: String = "krypton"
+    @State var options: Bool = false
+    
     var body: some View {
         ZStack {
             Color.fPrimary.ignoresSafeArea()
@@ -33,6 +22,20 @@ struct PomodoroTimerView: View {
             VStack {
                 
                 Spacer()
+                
+                HStack {
+                    Text("Krypton: ")
+                        .foregroundStyle(Color.fTertiary)
+                        .font(.custom("SourceCodePro-Bold", size: 25))
+                    
+                    Image(selectedKrypton)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 75, height: 75)
+                        .onTapGesture {
+                            options = true
+                        }
+                }
                 
                 HStack {
                     Text("Work: ")
@@ -92,6 +95,10 @@ struct PomodoroTimerView: View {
         .fullScreenCover(isPresented: $isStarted) {
             PomodoroView(workMinutes: workMinutes, breakMinutes: breakMinutes, isStarted: $isStarted)
         }
+        .sheet(isPresented: $options) {
+            SpriteSelectView(selectedKrypton: $selectedKrypton)
+                .presentationDetents([.medium])
+        }
     }
 }
 
@@ -102,87 +109,130 @@ struct PomodoroView: View {
     @StateObject var timerViewModel = PomodoroTimerViewModel(workMinutes: 15, breakMinutes: 5)
     @State var isGame: Bool = false
     @Environment(\.scenePhase) var scenePhase
+    @State var playing: Bool = false
+    
+    @StateObject private var audioPlayer = AudioPlayer()
 
     var body: some View {
-        ZStack {
-            Rectangle()
-                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
-                .foregroundStyle(Color.fPrimary)
-                .ignoresSafeArea()
-            
-            VStack {
-                
-                Spacer()
-                
+        NavigationStack {
+            ZStack {
                 Rectangle()
                     .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
-                    .foregroundStyle(Color.fSecondary)
+                    .foregroundStyle(Color.fPrimary)
                     .ignoresSafeArea()
-                    .mask(
-                        VStack {
-                            Spacer()
-                            Rectangle()
-                                .frame(height: timerViewModel.variableProgress * (UIScreen.main.bounds.height*1.05))
-                                .animation(.linear(duration: TimeInterval(timerViewModel.isWorkSession ? timerViewModel.totalSeconds : timerViewModel.breakSessionDuration)), value: timerViewModel.variableProgress)
-                                .ignoresSafeArea()
-                        }
-                    )
-            }
-            
-            VStack {
-                HStack {
-                    Text("\(timerViewModel.minutesLeft)")
-                        .font(.custom("SourceCodePro-Bold", size: 30))
-                        .foregroundStyle(Color.fText)
-                    Text(":")
-                        .font(.custom("SourceCodePro-Bold", size: 30))
-                        .foregroundStyle(Color.fText)
-                    Text("\(timerViewModel.secondsLeft)")
-                        .font(.custom("SourceCodePro-Bold", size: 30))
-                        .foregroundStyle(Color.fText)
+                
+                VStack {
+                    
+                    Spacer()
+                    
+                    Rectangle()
+                        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                        .foregroundStyle(Color.fSecondary)
+                        .ignoresSafeArea()
+                        .mask(
+                            VStack {
+                                Spacer()
+                                Rectangle()
+                                    .frame(height: timerViewModel.variableProgress * (UIScreen.main.bounds.height*1.05))
+                                    .animation(.linear(duration: TimeInterval(timerViewModel.isWorkSession ? timerViewModel.totalSeconds : timerViewModel.breakSessionDuration)), value: timerViewModel.variableProgress)
+                                    .ignoresSafeArea()
+                            }
+                        )
                 }
                 
-                Text(timerViewModel.isWorkSession ? "Keep Working!" : "Time to rest")
-                    .foregroundStyle(Color.fText)
-                    .font(.custom("SourceCodePro-Bold", size: 25))
-                
-                if !timerViewModel.isWorkSession {
+                VStack {
+                    HStack {
+                        Text("\(timerViewModel.minutesLeft)")
+                            .font(.custom("SourceCodePro-Bold", size: 30))
+                            .foregroundStyle(Color.fText)
+                        Text(":")
+                            .font(.custom("SourceCodePro-Bold", size: 30))
+                            .foregroundStyle(Color.fText)
+                        Text("\(timerViewModel.secondsLeft)")
+                            .font(.custom("SourceCodePro-Bold", size: 30))
+                            .foregroundStyle(Color.fText)
+                    }
+                    
+                    Text(timerViewModel.isWorkSession ? "Keep Working!" : "Time to rest")
+                        .foregroundStyle(Color.fText)
+                        .font(.custom("SourceCodePro-Bold", size: 25))
+                    
                     Button {
-                        isGame = true
+                        isStarted = false
                     } label: {
                         ZStack {
                             RoundedRectangle(cornerRadius: 10)
-                                .foregroundStyle(Color.fTertiary)
+                                .foregroundStyle(Color.red)
                                 .frame(width: 100, height: 50)
                             
-                            Text("Play")
+                            Text("Give Up")
                                 .font(.custom("SourceCodePro-Bold", size: 16))
                                 .foregroundStyle(Color.black)
                         }
                     }
+                    .frame(width: 75, height: 50)
+                    .padding()
+                    
+                    if !timerViewModel.isWorkSession {
+                        Button {
+                            isGame = true
+                        } label: {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .foregroundStyle(Color.fTertiary)
+                                    .frame(width: 100, height: 50)
+                                
+                                Text("Play")
+                                    .font(.custom("SourceCodePro-Bold", size: 16))
+                                    .foregroundStyle(Color.black)
+                            }
+                        }
+
+                    }
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        if playing {
+                            audioPlayer.stopAllSounds()
+                        } else {
+                            audioPlayer.playSound(fileName: "forest", fileType: "wav")
+                        }
+                        
+                        playing.toggle()
+                    } label: {
+                        Image(systemName: playing ? "headphones" : "headphones.slash")
+                            .foregroundStyle(Color.black)
+                    }
 
                 }
             }
-        }
-        .onAppear {
-            timerViewModel.updateDurations(workMinutes: workMinutes, breakMinutes: breakMinutes)
-            UIApplication.shared.isIdleTimerDisabled = true
-        }
-        .onChange(of: scenePhase) { newPhase in
-            switch newPhase {
-            case .background:
-                timerViewModel.stopTimer()
-                isStarted = false
-                
-            case .active:
-                timerViewModel.startWorkSession()
-                
-            default:
-                break
+            .onAppear {
+                timerViewModel.onTimerComplete = {
+                    if !timerViewModel.isWorkSession {
+                        isGame = false
+                    }
+                }
+                timerViewModel.updateDurations(workMinutes: workMinutes, breakMinutes: breakMinutes)
+                UIApplication.shared.isIdleTimerDisabled = true
             }
-        }
-        .fullScreenCover(isPresented: $isGame) {
-            GameView()
+            .onChange(of: scenePhase) { newPhase in
+                switch newPhase {
+                case .background:
+                    timerViewModel.stopTimer()
+                    isStarted = false
+                    
+                case .active:
+                    timerViewModel.startWorkSession()
+                    
+                default:
+                    break
+                }
+            }
+            .fullScreenCover(isPresented: $isGame) {
+                GameView()
+            }
         }
     }
 }

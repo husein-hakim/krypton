@@ -16,6 +16,7 @@ struct HomeView: View {
     @State var soundMenu: Bool = false
     @State var playing: Bool = false
     @State var isGame: Bool = false
+    @State var selectedKrypton: String
     
     @StateObject private var audioPlayer = AudioPlayer()
     @StateObject var focusSessionManager = FocusSessionsManager()
@@ -28,7 +29,7 @@ struct HomeView: View {
                 Color.fPrimary.ignoresSafeArea()
                 
                 VStack {
-                    CircularTimerView(viewModel: isBreak ? breakTimerViewModel : focusTimerViewModel, isFocus: $isFocus)
+                    CircularTimerView(viewModel: isBreak ? breakTimerViewModel : focusTimerViewModel, isFocus: $isFocus, selectedKrypton: selectedKrypton)
                     
                     if isBreak {
                         Button {
@@ -101,6 +102,7 @@ struct HomeView: View {
                     }
                     
                     Button {
+                        isFocus = false
                     } label: {
                         ZStack {
                             RoundedRectangle(cornerRadius: 10)
@@ -172,6 +174,7 @@ struct HomeView: View {
 struct CircularTimerView: View {
     @ObservedObject var viewModel: CircularTimerViewModel
     @Binding var isFocus: Bool
+    @State var selectedKrypton: String
     
     var body: some View {
         VStack {
@@ -187,13 +190,13 @@ struct CircularTimerView: View {
                     .frame(width: 250, height: 250)
                 
                 ZStack {
-                    Image("krypton")
+                    Image(selectedKrypton)
                         .resizable()
                         .scaledToFit()
                         .frame(width: 150, height: 150)
                         .saturation(0)
                     
-                    Image("krypton")
+                    Image(selectedKrypton)
                         .resizable()
                         .scaledToFit()
                         .frame(width: 150, height: 150)

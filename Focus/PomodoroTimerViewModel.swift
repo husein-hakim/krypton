@@ -22,6 +22,8 @@ class PomodoroTimerViewModel: ObservableObject {
     private var workSessionDuration: Int // Work session duration in seconds
     var breakSessionDuration: Int // Break session duration in seconds
     
+    var onTimerComplete: (() -> Void)?
+    
     var variableProgress: Double {
         return isWorkSession ? progress : 1 - progress
     }
@@ -87,6 +89,7 @@ class PomodoroTimerViewModel: ObservableObject {
     private func tick() {
         guard elapsedSeconds < totalSeconds else {
             timer?.cancel()
+            onTimerComplete?()
             switchToNextSession()
             return
         }
@@ -97,9 +100,6 @@ class PomodoroTimerViewModel: ObservableObject {
         progress = (Double(elapsedSeconds) / Double(totalSeconds))
 
         updateTimeComponents()
-
-        // Debugging
-        print("elapsedSeconds: \(elapsedSeconds), progress: \(progress)")
     }
 
     private func updateTimeComponents() {

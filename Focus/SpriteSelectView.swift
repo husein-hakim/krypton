@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SpriteSelectView: View {
     @State var sprite: SpriteOptions = .krypton
+    @Binding var selectedKrypton: String
     var body: some View {
         ZStack {
             Color.fSecondary.opacity(0.3).ignoresSafeArea()
@@ -35,6 +36,8 @@ struct SpriteSelectView: View {
                                 }
                                 .onTapGesture(perform: {
                                     sprite = currentSprite
+                                    selectedKrypton = currentSprite.rawValue
+                                    print("selected krypton is \(selectedKrypton)")
                                 })
                                 .padding()
                             } else {
@@ -46,8 +49,4 @@ struct SpriteSelectView: View {
             }
         }
     }
-}
-
-#Preview {
-    SpriteSelectView()
 }

@@ -9,4 +9,5 @@ import Foundation
 
 enum PfpList: String, Codable, CaseIterable {
     case krypton = "kryptonpfp"
+    case sharky = "sharkypfp"
 }

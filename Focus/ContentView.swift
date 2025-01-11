@@ -29,18 +29,12 @@ struct ContentView: View {
             if isLoading {
                 VStack {
                     HStack {
-                        Button {
-                            withAnimation {
-                                isMenuOpen.toggle()
-                            }
-                        } label: {
-                            Image(systemName: "line.3.horizontal")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 40, height: 40)
-                                .foregroundStyle(Color.white)
-                        }
-                        .padding()
+                        Image(authModel.userProfile[0].profile)
+                            .resizable()
+                            .frame(width: 50, height: 50)
+                            .scaledToFit()
+                            .clipShape(Circle())
+                            .padding()
                         
                         Spacer()
                         

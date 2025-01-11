@@ -20,6 +20,7 @@ struct TimerView: View {
     @State var timer: Double = 15.0
     @State var isFocus: Bool = false
     @State var options: Bool = false
+    @State var selectedKrypton: String = "krypton"
     
     var body: some View {
         ZStack {
@@ -32,7 +33,7 @@ struct TimerView: View {
                 
                 Spacer()
                 
-                CircularTimeSlider(selectedTime: $timer, options: $options)
+                CircularTimeSlider(selectedTime: $timer, options: $options, selectedImage: $selectedKrypton)
                 
                 Text("\(Int(timer)):00")
                     .font(.custom("SourceCodePro-Regular", size: 40))
@@ -59,10 +60,10 @@ struct TimerView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 5))
                 .frame(width: 75, height: 35)
                 .fullScreenCover(isPresented: $isFocus) {
-                    HomeView(minutes: timer, isFocus: $isFocus)
+                    HomeView(minutes: timer, isFocus: $isFocus, selectedKrypton: selectedKrypton)
                 }
                 .sheet(isPresented: $options, content: {
-                    SpriteSelectView()
+                    SpriteSelectView(selectedKrypton: $selectedKrypton)
                         .presentationDetents([.medium])
                 })
                 .padding()
@@ -71,9 +72,11 @@ struct TimerView: View {
                     .font(.custom("SourceCodePro-Regular", size: 18))
                     .foregroundStyle(Color.fText)
                 
-        
                 Spacer()
             }
+        }
+        .onChange(of: selectedKrypton) { oldValue, newValue in
+            print("krypton is \(newValue)")
         }
     }
 }
@@ -86,6 +89,7 @@ struct CircularTimeSlider: View {
     let maxTime: Double = 120
     
     @Binding var options: Bool
+    @Binding var selectedImage: String
     
     var body: some View {
         ZStack {
@@ -99,7 +103,7 @@ struct CircularTimeSlider: View {
                 .rotationEffect(.degrees(-90))
                 .frame(width: 250, height: 250)
             
-            Image("krypton")
+            Image(selectedImage)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 150, height: 150)
