@@ -14,6 +14,7 @@ struct PomodoroTimerView: View {
     @State var isStarted: Bool = false
     @State var selectedKrypton: String = "krypton"
     @State var options: Bool = false
+    @EnvironmentObject var kryptoDexModel: KryptoDexModel
     
     var body: some View {
         ZStack {
@@ -93,7 +94,8 @@ struct PomodoroTimerView: View {
             }
         }
         .fullScreenCover(isPresented: $isStarted) {
-            PomodoroView(workMinutes: workMinutes, breakMinutes: breakMinutes, isStarted: $isStarted)
+            PomodoroView(workMinutes: workMinutes, breakMinutes: breakMinutes, isStarted: $isStarted, selectedKrypton: selectedKrypton)
+                .environmentObject(kryptoDexModel)
         }
         .sheet(isPresented: $options) {
             SpriteSelectView(selectedKrypton: $selectedKrypton)
@@ -110,6 +112,10 @@ struct PomodoroView: View {
     @State var isGame: Bool = false
     @Environment(\.scenePhase) var scenePhase
     @State var playing: Bool = false
+    @State var kryptonsEarned: Int = 0
+    @State var selectedKrypton: String
+    @EnvironmentObject var kryptoDexModel: KryptoDexModel
+    @State var kryptoAvailability: Bool?
     
     @StateObject private var audioPlayer = AudioPlayer()
 
@@ -158,7 +164,16 @@ struct PomodoroView: View {
                         .font(.custom("SourceCodePro-Bold", size: 25))
                     
                     Button {
-                        isStarted = false
+                        Task {
+                            checkKrypton(selectedKrypton: selectedKrypton) { result in
+                                kryptoAvailability = result
+                                print(result)
+                            }
+                            if !kryptoAvailability! {
+                                try await kryptoDexModel.updateKryptoDex(krypto: selectedKrypton)
+                            }
+                            isStarted = false
+                        }
                     } label: {
                         ZStack {
                             RoundedRectangle(cornerRadius: 10)
@@ -207,10 +222,38 @@ struct PomodoroView: View {
                     }
 
                 }
+                
+                ToolbarItem(placement: .topBarLeading) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .frame(width: 100, height: 50)
+                            .foregroundStyle(Color.fSecondary)
+                            .opacity(0.5)
+                        
+                        HStack {
+                            Image(selectedKrypton)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 40, height: 40)
+                                .padding(.leading, 1)
+                            
+                            Spacer()
+                            
+                            Text("\(kryptonsEarned)")
+                                .font(.custom("SourceCodePro-Bold", size: 16))
+                                .foregroundStyle(Color.fText)
+                                .padding(.trailing, 1)
+                        }
+                    }
+                }
             }
             .onAppear {
                 timerViewModel.onTimerComplete = {
-                    if !timerViewModel.isWorkSession {
+                    if timerViewModel.isWorkSession {
+                        withAnimation {
+                            kryptonsEarned += 1
+                        }
+                    } else {
                         isGame = false
                     }
                 }
@@ -234,6 +277,18 @@ struct PomodoroView: View {
                 GameView()
             }
         }
+    }
+    
+    func checkKrypton(selectedKrypton: String, completion: @escaping((Bool) -> Void)) {
+        for i in 0..<kryptoDexModel.kryptoDex.count - 1 {
+            if selectedKrypton == kryptoDexModel.kryptoDex[i] {
+                completion(true)
+                print("true")
+                return
+            }
+        }
+        print("false")
+        completion(false)
     }
 }
 
