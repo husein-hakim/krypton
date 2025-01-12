@@ -12,7 +12,7 @@ import CoreMotion
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     let background = SKSpriteNode(imageNamed: "background")
-    let player = SKSpriteNode(imageNamed: "krypton")
+    let player = SKSpriteNode(imageNamed: "unicorn")
     let ground = SKSpriteNode(imageNamed: "land-grass")
     let gameOverLine = SKSpriteNode(color: .red, size: CGSize(width: 1000, height: 10))
     var firstTouch: Bool = false
@@ -64,7 +64,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         player.position = CGPoint(x: size.width / 2, y: size.height / 14)
         player.zPosition = 10
-        player.setScale(0.15)
+//        player.setScale(0.15)
+        player.setScale(0.5)
         player.physicsBody = SKPhysicsBody(circleOfRadius: player.size.height / 2)
         player.physicsBody?.isDynamic = false
         player.physicsBody?.restitution = 1
