@@ -25,12 +25,12 @@ struct ProfileSelectionView: View {
                                 ZStack {
                                     Circle()
                                         .foregroundStyle(pfp == currentPfp ? Color.fPrimary : Color.fSecondary)
-                                        .frame(width: 125, height: 125)
+                                        .frame(width: 90, height: 90)
 
                                     Image(currentPfp.rawValue)
                                         .resizable()
                                         .scaledToFit()
-                                        .frame(width: 110, height: 110)
+                                        .frame(width: 80, height: 80)
                                         .clipShape(Circle())
                                 }
                                 .onTapGesture(perform: {

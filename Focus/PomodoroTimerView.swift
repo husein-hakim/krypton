@@ -14,7 +14,6 @@ struct PomodoroTimerView: View {
     @State var isStarted: Bool = false
     @State var selectedKrypton: String = "krypton"
     @State var options: Bool = false
-    @EnvironmentObject var kryptoDexModel: KryptoDexModel
     
     var body: some View {
         ZStack {
@@ -95,7 +94,6 @@ struct PomodoroTimerView: View {
         }
         .fullScreenCover(isPresented: $isStarted) {
             PomodoroView(workMinutes: workMinutes, breakMinutes: breakMinutes, isStarted: $isStarted, selectedKrypton: selectedKrypton)
-                .environmentObject(kryptoDexModel)
         }
         .sheet(isPresented: $options) {
             SpriteSelectView(selectedKrypton: $selectedKrypton)
@@ -114,7 +112,6 @@ struct PomodoroView: View {
     @State var playing: Bool = false
     @State var kryptonsEarned: Int = 0
     @State var selectedKrypton: String
-    @EnvironmentObject var kryptoDexModel: KryptoDexModel
     @State var kryptoAvailability: Bool?
     
     @StateObject private var audioPlayer = AudioPlayer()
@@ -165,13 +162,6 @@ struct PomodoroView: View {
                     
                     Button {
                         Task {
-                            checkKrypton(selectedKrypton: selectedKrypton) { result in
-                                kryptoAvailability = result
-                                print(result)
-                            }
-                            if !kryptoAvailability! {
-                                try await kryptoDexModel.updateKryptoDex(krypto: selectedKrypton)
-                            }
                             isStarted = false
                         }
                     } label: {
@@ -277,18 +267,6 @@ struct PomodoroView: View {
                 GameView()
             }
         }
-    }
-    
-    func checkKrypton(selectedKrypton: String, completion: @escaping((Bool) -> Void)) {
-        for i in 0..<kryptoDexModel.kryptoDex.count - 1 {
-            if selectedKrypton == kryptoDexModel.kryptoDex[i] {
-                completion(true)
-                print("true")
-                return
-            }
-        }
-        print("false")
-        completion(false)
     }
 }
 

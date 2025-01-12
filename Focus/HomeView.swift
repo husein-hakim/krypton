@@ -11,7 +11,7 @@ struct HomeView: View {
     let minutes: Double
     @Binding var isFocus: Bool
     @StateObject private var focusTimerViewModel = CircularTimerViewModel(totalMinutes: 0)
-    @StateObject var breakTimerViewModel = BreakTimerViewModel(totalMinutes: 5)
+    @StateObject var breakTimerViewModel = BreakTimerViewModel(totalMinutes: 1)
     @State var isBreak: Bool = false
     @State var soundMenu: Bool = false
     @State var playing: Bool = false
@@ -29,15 +29,17 @@ struct HomeView: View {
                 Color.fPrimary.ignoresSafeArea()
                 
                 VStack {
-                    CircularTimerView(viewModel: isBreak ? breakTimerViewModel : focusTimerViewModel, isFocus: $isFocus, selectedKrypton: selectedKrypton)
+                    CircularTimerView(viewModel: isBreak ? breakTimerViewModel : focusTimerViewModel, isFocus: $isFocus, selectedKrypton: selectedKrypton, isBreak: isBreak)
                     
                     if isBreak {
                         Button {
-                            isBreak = false
+                            withAnimation {
+                                isBreak = false
+                            }
                             focusTimerViewModel.startTimer()
                             breakTimerViewModel.stopTimer()
                             breakTimerViewModel.isCooldownActive = true
-                            breakTimerViewModel.startCooldown(cooldownMinutes: 15)
+                            breakTimerViewModel.startCooldown(cooldownMinutes: 5)
                         } label: {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 10)
@@ -70,7 +72,9 @@ struct HomeView: View {
                     } else {
                         Button {
                             if !breakTimerViewModel.isCooldownActive {
-                                isBreak = true
+                                withAnimation {
+                                    isBreak = true
+                                }
                                 focusTimerViewModel.stopTimer()
                                 breakTimerViewModel.startTimer()
                             }
@@ -137,7 +141,16 @@ struct HomeView: View {
             }
             .onAppear {
                 breakTimerViewModel.isCooldownActive = true
-                breakTimerViewModel.startCooldown(cooldownMinutes: 5)
+                breakTimerViewModel.startCooldown(cooldownMinutes: 1)
+                breakTimerViewModel.onTimerComplete = {
+                    isGame = false
+                    focusTimerViewModel.startTimer()
+                    breakTimerViewModel.isCooldownActive = true
+                    breakTimerViewModel.startCooldown(cooldownMinutes: 5)
+                    withAnimation {
+                        isBreak = false
+                    }
+                }
                 focusTimerViewModel.totalSeconds = Int(minutes * 60)
                 UIApplication.shared.isIdleTimerDisabled = true
                 focusTimerViewModel.onTimerComplete = {
@@ -175,6 +188,7 @@ struct CircularTimerView: View {
     @ObservedObject var viewModel: CircularTimerViewModel
     @Binding var isFocus: Bool
     @State var selectedKrypton: String
+    let isBreak: Bool
     
     var body: some View {
         VStack {
@@ -201,9 +215,13 @@ struct CircularTimerView: View {
                         .scaledToFit()
                         .frame(width: 150, height: 150)
                         .mask(
-                            Rectangle()
-                                .frame(height: viewModel.progress * 100)
-                                .animation(.linear(duration: TimeInterval(viewModel.totalSeconds)), value: viewModel.progress)
+                            VStack {
+                                Spacer()
+                                
+                                Rectangle()
+                                    .frame(height: viewModel.progress * 100)
+                                    .animation(.linear(duration: TimeInterval(viewModel.totalSeconds)), value: viewModel.progress)
+                            }
                         )
                 }
             }

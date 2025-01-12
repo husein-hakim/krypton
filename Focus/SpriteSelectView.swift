@@ -26,13 +26,12 @@ struct SpriteSelectView: View {
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 10)
                                         .foregroundStyle(sprite == currentSprite ? Color.fPrimary : Color.fSecondary)
-                                        .frame(width: 125, height: 125)
+                                        .frame(width: 90, height: 100)
 
                                     Image(currentSprite.rawValue)
                                         .resizable()
                                         .scaledToFit()
-                                        .frame(width: 110, height: 110)
-                                        .clipShape(Circle())
+                                        .frame(width: 80, height: 80)
                                 }
                                 .onTapGesture(perform: {
                                     sprite = currentSprite

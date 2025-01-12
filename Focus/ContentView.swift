@@ -21,7 +21,6 @@ struct ContentView: View {
     
     @State private var menuOffset: CGFloat = 0
     private let menuWidth: CGFloat = 300
-    @StateObject var kryptoDexModel = KryptoDexModel()
     
     var body: some View {
         ZStack {
@@ -69,7 +68,6 @@ struct ContentView: View {
                         TimerView()
                     } else {
                         PomodoroTimerView()
-                            .environmentObject(kryptoDexModel)
                     }
                 }
                 .disabled(isMenuOpen)
@@ -110,10 +108,6 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            Task {
-                try await kryptoDexModel.fetchKryptoDex()
-                print("cobntent view updates: \(kryptoDexModel.kryptoDex)")
-            }
             if authModel.userProfile.isEmpty {
                 Task {
                     try await authModel.getProfile()
