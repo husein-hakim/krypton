@@ -10,7 +10,7 @@ import SwiftUI
 struct HomeView: View {
     let minutes: Double
     @Binding var isFocus: Bool
-    @StateObject private var focusTimerViewModel = CircularTimerViewModel(totalMinutes: 0)
+    @StateObject private var focusTimerViewModel = CircularTimerViewModel(totalMinutes: 1)
     @StateObject var breakTimerViewModel = BreakTimerViewModel(totalMinutes: 1)
     @State var isBreak: Bool = false
     @State var soundMenu: Bool = false
@@ -218,9 +218,11 @@ struct CircularTimerView: View {
                             VStack {
                                 Spacer()
                                 
-                                Rectangle()
-                                    .frame(height: viewModel.progress * 100)
-                                    .animation(.linear(duration: TimeInterval(viewModel.totalSeconds)), value: viewModel.progress)
+                                GeometryReader { geometry in
+                                    Rectangle()
+                                        .frame(height: CGFloat(viewModel.progress) * geometry.size.height)
+                                        .animation(.linear(duration: TimeInterval(viewModel.totalSeconds)), value: (viewModel.progress))
+                                }
                             }
                         )
                 }

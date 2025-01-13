@@ -40,7 +40,7 @@ class CircularTimerViewModel: ObservableObject {
         }
         
         elapsedSeconds += 1
-        progress = Double(elapsedSeconds) / Double(totalSeconds) // Move forward
+        progress = (Double(elapsedSeconds) / Double(totalSeconds))*1.05 // Move forward
         print(progress)
         
         updateTimeComponents()
