@@ -22,7 +22,7 @@ struct FocusApp: App {
                     Text("checking")
                     
                 case .loggedIn:
-                    ContentView()
+                    TabBarView()
                         .environmentObject(authModel)
                     
 //                    GameView()
