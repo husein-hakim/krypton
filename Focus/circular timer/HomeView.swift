@@ -11,12 +11,15 @@ struct HomeView: View {
     let minutes: Double
     @Binding var isFocus: Bool
     @StateObject private var focusTimerViewModel = CircularTimerViewModel(totalMinutes: 1)
-    @StateObject var breakTimerViewModel = BreakTimerViewModel(totalMinutes: 1)
+    @StateObject var breakTimerViewModel = BreakTimerViewModel(totalMinutes: 5)
     @State var isBreak: Bool = false
     @State var soundMenu: Bool = false
     @State var playing: Bool = false
     @State var isGame: Bool = false
     @State var selectedKrypton: String
+    @State var breakCounter: Int = 0
+    @State var breakDuration: Int = 0
+    @State var focusProgress: Double = 0.0
     
     @StateObject private var audioPlayer = AudioPlayer()
     @StateObject var focusSessionManager = FocusSessionsManager()
@@ -29,10 +32,11 @@ struct HomeView: View {
                 Color.fPrimary.ignoresSafeArea()
                 
                 VStack {
-                    CircularTimerView(viewModel: isBreak ? breakTimerViewModel : focusTimerViewModel, isFocus: $isFocus, selectedKrypton: selectedKrypton, isBreak: isBreak)
+                    CircularTimerView(viewModel: isBreak ? breakTimerViewModel : focusTimerViewModel, isFocus: $isFocus, selectedKrypton: selectedKrypton, focusProgress: $focusProgress, isBreak: $isBreak)
                     
                     if isBreak {
                         Button {
+                            breakDuration += breakTimerViewModel.secondsUsed
                             withAnimation {
                                 isBreak = false
                             }
@@ -72,9 +76,12 @@ struct HomeView: View {
                     } else {
                         Button {
                             if !breakTimerViewModel.isCooldownActive {
+                                breakCounter += 1
+                                print(breakCounter)
                                 withAnimation {
                                     isBreak = true
                                 }
+                                focusProgress = focusTimerViewModel.progress
                                 focusTimerViewModel.stopTimer()
                                 breakTimerViewModel.startTimer()
                             }
@@ -141,12 +148,12 @@ struct HomeView: View {
             }
             .onAppear {
                 breakTimerViewModel.isCooldownActive = true
-                breakTimerViewModel.startCooldown(cooldownMinutes: 1)
+                breakTimerViewModel.startCooldown(cooldownMinutes: 0)
                 breakTimerViewModel.onTimerComplete = {
                     isGame = false
                     focusTimerViewModel.startTimer()
                     breakTimerViewModel.isCooldownActive = true
-                    breakTimerViewModel.startCooldown(cooldownMinutes: 5)
+                    breakTimerViewModel.startCooldown(cooldownMinutes: 0)
                     withAnimation {
                         isBreak = false
                     }
@@ -156,7 +163,7 @@ struct HomeView: View {
                 focusTimerViewModel.onTimerComplete = {
                     Task {
                         do {
-                            try await focusSessionManager.createFocusSession(duration: Int(minutes), kryptons_earned: Int(floor(minutes/15)))
+                            try await focusSessionManager.createFocusSession(duration: Int(minutes), kryptons_earned: Int(floor(minutes/15)), breaks_taken: breakCounter, break_duration: breakDuration)
                             isFocus = false
                         } catch {
                             print("error initializing focus session upload")
@@ -188,7 +195,8 @@ struct CircularTimerView: View {
     @ObservedObject var viewModel: CircularTimerViewModel
     @Binding var isFocus: Bool
     @State var selectedKrypton: String
-    let isBreak: Bool
+    @Binding var focusProgress: Double
+    @Binding var isBreak: Bool
     
     var body: some View {
         VStack {
@@ -220,7 +228,7 @@ struct CircularTimerView: View {
                                 
                                 GeometryReader { geometry in
                                     Rectangle()
-                                        .frame(height: CGFloat(viewModel.progress) * geometry.size.height)
+                                        .frame(height: !isBreak ? CGFloat(viewModel.progress) * geometry.size.height : focusProgress * geometry.size.height)
                                         .animation(.linear(duration: TimeInterval(viewModel.totalSeconds)), value: (viewModel.progress))
                                 }
                             }

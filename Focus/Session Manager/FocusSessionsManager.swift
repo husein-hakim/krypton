@@ -18,10 +18,10 @@ class FocusSessionsManager: ObservableObject {
         self.client = SupabaseClient(supabaseURL: URL(string: supabaseURL)!, supabaseKey: supabase_API_KEY)
     }
     
-    func createFocusSession(duration: Int, kryptons_earned: Int) async throws {
+    func createFocusSession(duration: Int, kryptons_earned: Int, breaks_taken: Int, break_duration: Int) async throws {
         do {
             let currentUser = try await client.auth.session.user.id
-            let focusData = FocusSessionManager(user_id: currentUser, duration: duration, kryptons_earned: kryptons_earned)
+            let focusData = FocusSessionManager(user_id: currentUser, duration: duration, kryptons_earned: kryptons_earned, breaks_taken: breaks_taken, breaks_duration: break_duration)
             let insertResult = try await client.from("FocusSessions").insert(focusData).execute()
         } catch {
             print("error uploading focus session: \(error.localizedDescription)")

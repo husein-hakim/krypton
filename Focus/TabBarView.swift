@@ -18,7 +18,7 @@ struct TabBarView: View {
                     Image(systemName: "house")
                 }
             
-            Text("Stats")
+            StatisticsView()
                 .tabItem {
                     Image(systemName: "house")
                 }

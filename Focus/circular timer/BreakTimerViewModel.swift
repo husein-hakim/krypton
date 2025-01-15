@@ -21,6 +21,10 @@ class BreakTimerViewModel: CircularTimerViewModel {
         guard totalCooldownSeconds > 0 else { return 0 }
         return 1 - (Double(cooldownSecondsLeft) / Double(totalCooldownSeconds))
     }
+    
+    var secondsUsed: Int {
+        return Int(progress * Double(totalSeconds))
+    }
 
     func startCooldown(cooldownMinutes: Double) {
         stopCooldown() // Stop any existing cooldowns

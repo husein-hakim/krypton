@@ -11,4 +11,6 @@ struct FocusSessionManager: Decodable, Encodable {
     let user_id: UUID
     let duration: Int
     let kryptons_earned: Int
+    let breaks_taken: Int
+    let breaks_duration: Int
 }
