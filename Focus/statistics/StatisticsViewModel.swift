@@ -24,10 +24,9 @@ func prepareBreakGraphData(breaks: [FocusSessionManager]) -> [BreakGraphData] {
     
     return weekdays.map { day in
         let data = breakDurations[day]!
-        return BreakGraphData(day: day, duration: data.duration, count: data.count)
+        return BreakGraphData(day: day, duration: data.duration / 60, count: data.count)
     }
 }
-
 
 func currentWeekRange() -> (startOfWeek: Date, endOfWeek: Date) {
     let calendar = Calendar.current

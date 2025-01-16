@@ -26,6 +26,8 @@ struct HomeView: View {
     
     @Environment(\.scenePhase) var scenePhase
     
+    @State var backgroundMusic: BackgroundMusic = .forest
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -131,14 +133,38 @@ struct HomeView: View {
                 }
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            if playing {
-                                audioPlayer.stopAllSounds()
-                            } else {
-                                audioPlayer.playSound(fileName: "forest", fileType: "wav")
+//                        Button {
+//                            if playing {
+//                                audioPlayer.stopAllSounds()
+//                            } else {
+//                                audioPlayer.playSound(fileName: "forest", fileType: "wav")
+//                            }
+//                            
+//                            playing.toggle()
+//                        } label: {
+//                            Image(systemName: playing ? "headphones" : "headphones.slash")
+//                                .foregroundStyle(Color.black)
+//                        }
+                        
+                        Menu {
+                            ForEach(BackgroundMusic.allCases) { music in
+                                Button {
+                                    audioPlayer.stopAllSounds()
+                                    audioPlayer.playSound(fileName: music.rawValue, fileType: "wav")
+                                    playing = true
+                                } label: {
+                                    Text(music.rawValue)
+                                        .font(.custom("SourceCodePro-Regular", size: 18))
+                                }
                             }
                             
-                            playing.toggle()
+                            Button {
+                                audioPlayer.stopAllSounds()
+                                playing = false
+                            } label: {
+                                Text("Stop Playing")
+                            }
+
                         } label: {
                             Image(systemName: playing ? "headphones" : "headphones.slash")
                                 .foregroundStyle(Color.black)
@@ -149,17 +175,17 @@ struct HomeView: View {
             }
             .onAppear {
                 breakTimerViewModel.isCooldownActive = true
-                breakTimerViewModel.startCooldown(cooldownMinutes: 0)
+                breakTimerViewModel.startCooldown(cooldownMinutes: 5)
                 breakTimerViewModel.onTimerComplete = {
                     isGame = false
                     focusTimerViewModel.startTimer()
                     breakTimerViewModel.isCooldownActive = true
-                    breakTimerViewModel.startCooldown(cooldownMinutes: 0)
+                    breakTimerViewModel.startCooldown(cooldownMinutes: 5)
                     withAnimation {
                         isBreak = false
                     }
                 }
-                //focusTimerViewModel.totalSeconds = Int(minutes * 60)
+                focusTimerViewModel.totalSeconds = Int(minutes * 60)
                 UIApplication.shared.isIdleTimerDisabled = true
                 focusTimerViewModel.onTimerComplete = {
                     Task {

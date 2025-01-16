@@ -198,19 +198,42 @@ struct PomodoroView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        if playing {
-                            audioPlayer.stopAllSounds()
-                        } else {
-                            audioPlayer.playSound(fileName: "forest", fileType: "wav")
+//                    Button {
+//                        if playing {
+//                            audioPlayer.stopAllSounds()
+//                        } else {
+//                            audioPlayer.playSound(fileName: "forest", fileType: "wav")
+//                        }
+//                        
+//                        playing.toggle()
+//                    } label: {
+//                        Image(systemName: playing ? "headphones" : "headphones.slash")
+//                            .foregroundStyle(Color.black)
+//                    }
+                    
+                    Menu {
+                        ForEach(BackgroundMusic.allCases) { music in
+                            Button {
+                                audioPlayer.stopAllSounds()
+                                audioPlayer.playSound(fileName: music.rawValue, fileType: "wav")
+                                playing = true
+                            } label: {
+                                Text(music.rawValue)
+                                    .font(.custom("SourceCodePro-Regular", size: 18))
+                            }
                         }
                         
-                        playing.toggle()
+                        Button {
+                            audioPlayer.stopAllSounds()
+                            playing = false
+                        } label: {
+                            Text("Stop Playing")
+                        }
+
                     } label: {
                         Image(systemName: playing ? "headphones" : "headphones.slash")
                             .foregroundStyle(Color.black)
                     }
-
                 }
                 
                 ToolbarItem(placement: .topBarLeading) {

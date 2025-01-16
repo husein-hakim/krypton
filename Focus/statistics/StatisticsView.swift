@@ -24,7 +24,7 @@ struct StatisticsView: View {
             Color.fPrimary.ignoresSafeArea()
             
             if isLoading {
-                VStack {
+                ScrollView {
                     Text("Statistics")
                         .font(.custom("SourceCodePro-Bold", size: 30))
                         .foregroundStyle(Color.fText)
@@ -58,11 +58,23 @@ struct StatisticsView: View {
                             .frame(width: 100, height: 100)
                         }
                     } else {
-                        if graphType == .bar {
-                            DurationBreakBarGraph(breakData: breakGraphData)
-                        } else {
-                            DurationBreakLineGraph(graphData: breakGraphData)
+                        VStack {
+                            HStack {
+                                Text("Break Duration")
+                                    .font(.custom("SourceCodePro", size: 25))
+                                    .foregroundStyle(Color.fText)
+                                    .padding()
+                                
+                                Spacer()
+                            }
+                            
+                            if graphType == .bar {
+                                DurationBreakBarGraph(breakData: breakGraphData)
+                            } else {
+                                DurationBreakLineGraph(graphData: breakGraphData)
+                            }
                         }
+                        
                         HStack {
                             Spacer()
                             
@@ -73,6 +85,19 @@ struct StatisticsView: View {
                             }
                             .pickerStyle(.segmented)
                             .frame(width: 100, height: 100)
+                        }
+                        
+                        VStack {
+                            HStack {
+                                Text("No of Breaks")
+                                    .font(.custom("SourceCodePro", size: 25))
+                                    .foregroundStyle(Color.fText)
+                                    .padding()
+                                
+                                Spacer()
+                            }
+                            
+                            BreakCountBarGraph(breakData: breakGraphData)
                         }
                     }
                 }
@@ -178,7 +203,7 @@ struct DurationBreakBarGraph: View {
         }
         .chartYAxis {
             AxisMarks { value in
-                AxisValueLabel("\(value.as(Int.self) ?? 0)")
+                AxisValueLabel("\(value.as(Int.self) ?? 0) min")
                     .font(.custom("SourceCodePro", size: 15))
                     .foregroundStyle(Color.fText)
             }
@@ -211,6 +236,38 @@ struct DurationBreakLineGraph: View {
         .chartYAxis {
             AxisMarks { value in
                 AxisValueLabel("\(value.as(Int.self) ?? 0) min")
+                    .font(.custom("SourceCodePro", size: 15))
+                    .foregroundStyle(Color.fText)
+            }
+        }
+        .frame(height: 300)
+        .padding()
+    }
+}
+
+struct BreakCountBarGraph: View {
+    let breakData: [BreakGraphData]
+    
+    var body: some View {
+        Chart {
+            ForEach(breakData) { data in
+                BarMark(
+                    x: .value("Day", data.day),
+                    y: .value("No of Breaks", data.count)
+                )
+                .foregroundStyle(Color.fSecondary)
+            }
+        }
+        .chartXAxis {
+            AxisMarks { value in
+                AxisValueLabel()
+                    .font(.custom("SourceCodePro", size: 15))
+                    .foregroundStyle(Color.fText)
+            }
+        }
+        .chartYAxis {
+            AxisMarks { value in
+                AxisValueLabel("\(value.as(Int.self) ?? 0)")
                     .font(.custom("SourceCodePro", size: 15))
                     .foregroundStyle(Color.fText)
             }
