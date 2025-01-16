@@ -114,6 +114,7 @@ struct HomeView: View {
                     
                     Button {
                         isFocus = false
+                        audioPlayer.stopAllSounds()
                     } label: {
                         ZStack {
                             RoundedRectangle(cornerRadius: 10)
@@ -158,7 +159,7 @@ struct HomeView: View {
                         isBreak = false
                     }
                 }
-                focusTimerViewModel.totalSeconds = Int(minutes * 60)
+                //focusTimerViewModel.totalSeconds = Int(minutes * 60)
                 UIApplication.shared.isIdleTimerDisabled = true
                 focusTimerViewModel.onTimerComplete = {
                     Task {
