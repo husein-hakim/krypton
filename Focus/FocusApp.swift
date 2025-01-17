@@ -25,7 +25,7 @@ struct FocusApp: App {
                     TabBarView()
                         .environmentObject(authModel)
                     
-//                    GameView()
+                    //GameView()
                     
                 case .loggedOut:
                     LoginView()

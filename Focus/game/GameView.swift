@@ -9,6 +9,8 @@ import SwiftUI
 import SpriteKit
 
 class StartScene: SKScene {
+    var character: String?
+    
     override func didMove(to view: SKView) {
         self.size = CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
         scene?.scaleMode = .aspectFill
@@ -21,6 +23,7 @@ class StartScene: SKScene {
             
             if startNode.name == "startButton" {
                 let game = GameScene(size: self.size)
+                game.character = self.character
                 let transition = SKTransition.fade(withDuration: 1.2)
                 
                 self.view?.presentScene(game, transition: transition)
@@ -31,13 +34,14 @@ class StartScene: SKScene {
  
 struct GameView: View {
     let startScene = StartScene(fileNamed: "GameStartScene")!
+    @State var selectedCharacter: String
+    
     var body: some View {
         SpriteView(scene: startScene)
             //.frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
             .ignoresSafeArea()
+            .onAppear {
+                startScene.character = self.selectedCharacter
+            }
     }
-}
-
-#Preview {
-    GameView()
 }

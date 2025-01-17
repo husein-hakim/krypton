@@ -11,6 +11,7 @@ import GameplayKit
 import CoreMotion
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
+    var character: String?
     let background = SKSpriteNode(imageNamed: "background")
     let player = SKSpriteNode(imageNamed: "unicorn")
     let ground = SKSpriteNode(imageNamed: "land-grass")
@@ -24,9 +25,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var downwardForce: CGFloat = 0.0
     
     let platformWidth: CGFloat = 70
-    let minPlatformSpacing: CGFloat = 80  // Minimum vertical gap between platforms
-    let maxPlatformSpacing: CGFloat = 160 // Maximum vertical gap between platforms
-    let horizontalSpreadFactor: CGFloat = 0.7 // Controls how spread out platforms are horizontally
+    let minPlatformSpacing: CGFloat = 100  // Minimum vertical gap between platforms
+    let maxPlatformSpacing: CGFloat = 180 // Maximum vertical gap between platforms
+    let horizontalSpreadFactor: CGFloat = 1.0 // Controls how spread out platforms are horizontally
     
     let cam = SKCameraNode()
     var isCamFollowingPlayer: Bool = false
@@ -42,6 +43,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let motionManager = CMMotionManager()
     
     override func didMove(to view: SKView) {
+        if let character {
+            player.texture = SKTexture(imageNamed: character)
+        }
+        audioPlayer.preloadAudio(fileName: "jump", fileType: "mp3")
         self.size = CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
         
         self.anchorPoint = .zero
@@ -64,7 +69,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         player.position = CGPoint(x: size.width / 2, y: size.height / 14)
         player.zPosition = 10
-//        player.setScale(0.15)
+        //player.setScale(0.17)
         player.setScale(0.5)
         player.physicsBody = SKPhysicsBody(circleOfRadius: player.size.height / 2)
         player.physicsBody?.isDynamic = false
@@ -81,8 +86,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         gameOverLine.physicsBody = SKPhysicsBody(rectangleOf: gameOverLine.size)
         gameOverLine.physicsBody?.affectedByGravity = false
         gameOverLine.physicsBody?.allowsRotation = false
+        gameOverLine.physicsBody?.restitution = 0
+        gameOverLine.physicsBody?.isDynamic = false
         gameOverLine.physicsBody?.categoryBitMask = bitmasks.gameOverLine.rawValue
-        gameOverLine.physicsBody?.contactTestBitMask = bitmasks.platform.rawValue | bitmasks.gameOverLine.rawValue
+        gameOverLine.physicsBody?.contactTestBitMask = bitmasks.player.rawValue
+        gameOverLine.physicsBody?.collisionBitMask = 0
         addChild(gameOverLine)
         
         scoreLabel.fontColor = .black
@@ -101,7 +109,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         motionManager.startAccelerometerUpdates(to: OperationQueue.main) { [weak self] data, error in
             guard let self = self, let accelerometerData = data else { return }
             
-            let tiltThreshold: CGFloat = 0.01 // Adjust sensitivity if needed
+            let tiltThreshold: CGFloat = 0.02 // Adjust sensitivity if needed
             let tilt = CGFloat(accelerometerData.acceleration.x)
             
             // Apply tilt to player's position
@@ -118,6 +126,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         setupInitialPlatforms()
+        
+        view.showsPhysics = true
     }
     
     override func update(_ currentTime: TimeInterval) {
@@ -174,6 +184,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             contactB = contact.bodyA
         }
         
+        if (contactA.categoryBitMask == bitmasks.player.rawValue &&
+            contactB.categoryBitMask == bitmasks.gameOverLine.rawValue) ||
+           (contactB.categoryBitMask == bitmasks.player.rawValue &&
+            contactA.categoryBitMask == bitmasks.gameOverLine.rawValue) {
+            gameOver()
+            return
+        }
+        
         if contactA.categoryBitMask == bitmasks.platform.rawValue && contactB.categoryBitMask == bitmasks.player.rawValue {
             contactA.node?.removeFromParent()
         }
@@ -193,10 +211,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             updateScore()
             audioPlayer.playSoundOnce(fileName: "jump", fileType: ".mp3")
-        }
-        
-        if contactA.categoryBitMask == bitmasks.player.rawValue && contactB.categoryBitMask == bitmasks.gameOverLine.rawValue {
-            gameOver()
         }
     }
     
@@ -218,12 +232,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func gameOver() {
+        player.physicsBody?.restitution = CGFloat(0)
+        //player.physicsBody?.affectedByGravity = true
         let gameOverScene = GameOverScene(size: self.size)
         let transition = SKTransition.crossFade(withDuration: 0.5)
         removeOffscreenPlatforms()
         audioPlayer.playSoundOnce(fileName: "fall", fileType: ".mp3")
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             self.view?.presentScene(gameOverScene, transition: transition)
         }
     }

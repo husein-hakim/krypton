@@ -20,6 +20,8 @@ struct HomeView: View {
     @State var breakCounter: Int = 0
     @State var breakDuration: Int = 0
     @State var focusProgress: Double = 0.0
+    @State private var purrTimer: Timer?
+    @State private var volume: Float = 0.5
     
     @StateObject private var audioPlayer = AudioPlayer()
     @StateObject var focusSessionManager = FocusSessionsManager()
@@ -159,6 +161,17 @@ struct HomeView: View {
                                 }
                             }
                             
+                            HStack {
+                                Text("Volume")
+                                
+                                Slider(value: Binding(get: {
+                                    volume
+                                }, set: { newValue in
+                                    volume = newValue
+                                    audioPlayer.volume = volume
+                                }))
+                            }
+                            
                             Button {
                                 audioPlayer.stopAllSounds()
                                 playing = false
@@ -186,6 +199,7 @@ struct HomeView: View {
                         isBreak = false
                     }
                 }
+                startPurrTimer()
                 focusTimerViewModel.totalSeconds = Int(minutes * 60)
                 UIApplication.shared.isIdleTimerDisabled = true
                 focusTimerViewModel.onTimerComplete = {
@@ -214,8 +228,26 @@ struct HomeView: View {
             }
         }
         .fullScreenCover(isPresented: $isGame) {
-            GameView()
+            GameView(selectedCharacter: "unicorn")
         }
+    }
+    
+    private func startPurrTimer() {
+        stopPurrTimer()
+        
+        purrTimer = Timer.scheduledTimer(withTimeInterval: Double.random(in: 30...120), repeats: true) { _ in
+            playPurrSound()
+        }
+    }
+
+    private func stopPurrTimer() {
+        purrTimer?.invalidate()
+        purrTimer = nil
+    }
+
+    private func playPurrSound() {
+        audioPlayer.playSound(fileName: "krypton purr", fileType: "mp3")
+        print("Purr sound played!")
     }
 }
 

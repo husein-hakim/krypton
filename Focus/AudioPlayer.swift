@@ -10,6 +10,11 @@ import AVFoundation
 
 class AudioPlayer: ObservableObject {
     private var players: [String: AVAudioPlayer] = [:]
+    @Published var volume: Float = 0.5 {
+        didSet {
+            updateVolumeForAllPlayers()
+        }
+    }
     
     /// Preloads the audio file into memory to avoid delays during playback.
     func preloadAudio(fileName: String, fileType: String) {
@@ -39,7 +44,7 @@ class AudioPlayer: ObservableObject {
             player.currentTime = 0
             player.play()
         } else {
-            preloadAudio(fileName: fileName, fileType: fileType)
+            //preloadAudio(fileName: fileName, fileType: fileType)
             players[key]?.play()
         }
     }
@@ -52,6 +57,7 @@ class AudioPlayer: ObservableObject {
             player.numberOfLoops = -1
             player.stop() // Reset playback
             player.currentTime = 0
+            player.volume = volume
             player.play()
         } else {
             preloadAudio(fileName: fileName, fileType: fileType)
@@ -72,6 +78,12 @@ class AudioPlayer: ObservableObject {
     func stopAllSounds() {
         for player in players.values {
             player.stop()
+        }
+    }
+    
+    private func updateVolumeForAllPlayers() {
+        for player in players.values {
+            player.volume = volume
         }
     }
 }
