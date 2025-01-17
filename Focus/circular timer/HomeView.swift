@@ -44,8 +44,9 @@ struct HomeView: View {
                             }
                             focusTimerViewModel.startTimer()
                             breakTimerViewModel.stopTimer()
+                            breakTimerViewModel.resetTimer(totalMinutes: 5.0)
                             breakTimerViewModel.isCooldownActive = true
-                            breakTimerViewModel.startCooldown(cooldownMinutes: 5)
+                            breakTimerViewModel.startCooldown(cooldownMinutes: 1)
                         } label: {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 10)
@@ -175,7 +176,7 @@ struct HomeView: View {
             }
             .onAppear {
                 breakTimerViewModel.isCooldownActive = true
-                breakTimerViewModel.startCooldown(cooldownMinutes: 5)
+                breakTimerViewModel.startCooldown(cooldownMinutes: 0)
                 breakTimerViewModel.onTimerComplete = {
                     isGame = false
                     focusTimerViewModel.startTimer()
@@ -190,7 +191,7 @@ struct HomeView: View {
                 focusTimerViewModel.onTimerComplete = {
                     Task {
                         do {
-                            try await focusSessionManager.createFocusSession(duration: Int(minutes), kryptons_earned: Int(floor(minutes/15)), breaks_taken: breakCounter, break_duration: breakDuration)
+                            try await focusSessionManager.createFocusSession(duration: Int(minutes), kryptons_earned: Int(floor(minutes/15)), breaks_taken: breakCounter, break_duration: (breakDuration/60))
                             isFocus = false
                         } catch {
                             print("error initializing focus session upload")
@@ -254,9 +255,14 @@ struct CircularTimerView: View {
                                 Spacer()
                                 
                                 GeometryReader { geometry in
-                                    Rectangle()
-                                        .frame(height: !isBreak ? CGFloat(viewModel.progress) * geometry.size.height : focusProgress * geometry.size.height)
-                                        .animation(.linear(duration: TimeInterval(viewModel.totalSeconds)), value: (viewModel.progress))
+                                    if !isBreak {
+                                        Rectangle()
+                                            .frame(height: CGFloat(viewModel.progress) * geometry.size.height)
+                                            .animation(.linear(duration: TimeInterval(viewModel.totalSeconds)), value: (viewModel.progress))
+                                    } else {
+                                        Rectangle()
+                                            .frame(height: focusProgress * geometry.size.height)
+                                    }
                                 }
                             }
                         )

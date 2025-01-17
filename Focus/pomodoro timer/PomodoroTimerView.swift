@@ -113,6 +113,10 @@ struct PomodoroView: View {
     @State var kryptonsEarned: Int = 0
     @State var selectedKrypton: String
     @State var kryptoAvailability: Bool?
+    @State var totalDuration: Int = 0
+    @State var totalBreakDuration: Int = 0
+    @State var totalBreakCounts: Int = 0
+    @StateObject var focusSessionManager = FocusSessionsManager()
     
     @StateObject private var audioPlayer = AudioPlayer()
 
@@ -162,6 +166,7 @@ struct PomodoroView: View {
                     
                     Button {
                         Task {
+                            try await focusSessionManager.createFocusSession(duration: totalDuration, kryptons_earned: kryptonsEarned, breaks_taken: totalBreakCounts, break_duration: totalBreakDuration)
                             isStarted = false
                         }
                     } label: {
@@ -265,9 +270,12 @@ struct PomodoroView: View {
                     if timerViewModel.isWorkSession {
                         withAnimation {
                             kryptonsEarned += 1
+                            totalDuration += (timerViewModel.workSessionDuration / 60)
                         }
                     } else {
                         isGame = false
+                        totalBreakDuration += (timerViewModel.breakSessionDuration / 60)
+                        totalBreakCounts += 1
                     }
                 }
                 timerViewModel.updateDurations(workMinutes: workMinutes, breakMinutes: breakMinutes)

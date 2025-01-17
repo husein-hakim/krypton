@@ -52,5 +52,13 @@ class BreakTimerViewModel: CircularTimerViewModel {
         cooldownSecondsLeft = 0
         totalCooldownSeconds = 0
     }
+    
+    func resetTimer(totalMinutes: Double) {
+        stopTimer()
+        elapsedSeconds = 0
+        progress = 0.0
+        totalSeconds = Int(totalMinutes * 60)
+        updateTimeComponents()
+    }
 }
 

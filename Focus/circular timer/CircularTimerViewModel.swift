@@ -14,8 +14,8 @@ class CircularTimerViewModel: ObservableObject {
     @Published var secondsLeft: Int = 0
     
     var totalSeconds: Int // Total time in seconds
-    private var elapsedSeconds: Int = 0
-    private var timer: AnyCancellable?
+    var elapsedSeconds: Int = 0
+    var timer: AnyCancellable?
     
     var onTimerComplete: (() -> Void)?
     
@@ -46,7 +46,7 @@ class CircularTimerViewModel: ObservableObject {
         updateTimeComponents()
     }
     
-    private func updateTimeComponents() {
+    func updateTimeComponents() {
         let remainingSeconds = totalSeconds - elapsedSeconds
         minutesLeft = remainingSeconds / 60
         secondsLeft = remainingSeconds % 60

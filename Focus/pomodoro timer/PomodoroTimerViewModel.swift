@@ -19,7 +19,7 @@ class PomodoroTimerViewModel: ObservableObject {
     var elapsedSeconds: Int = 0
     private var timer: AnyCancellable?
 
-    private var workSessionDuration: Int // Work session duration in seconds
+    var workSessionDuration: Int // Work session duration in seconds
     var breakSessionDuration: Int // Break session duration in seconds
     
     var onTimerComplete: (() -> Void)?
