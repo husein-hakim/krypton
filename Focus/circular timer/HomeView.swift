@@ -136,19 +136,6 @@ struct HomeView: View {
                 }
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
-//                        Button {
-//                            if playing {
-//                                audioPlayer.stopAllSounds()
-//                            } else {
-//                                audioPlayer.playSound(fileName: "forest", fileType: "wav")
-//                            }
-//                            
-//                            playing.toggle()
-//                        } label: {
-//                            Image(systemName: playing ? "headphones" : "headphones.slash")
-//                                .foregroundStyle(Color.black)
-//                        }
-                        
                         Menu {
                             ForEach(BackgroundMusic.allCases) { music in
                                 Button {
@@ -228,7 +215,7 @@ struct HomeView: View {
             }
         }
         .fullScreenCover(isPresented: $isGame) {
-            GameView(selectedCharacter: "unicorn")
+            GameView(selectedCharacter: selectedKrypton, isGame: $isGame)
         }
     }
     

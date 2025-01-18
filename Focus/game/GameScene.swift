@@ -12,8 +12,10 @@ import CoreMotion
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     var character: String?
+    var dismissAction: (() -> Void)?
     let background = SKSpriteNode(imageNamed: "background")
-    let player = SKSpriteNode(imageNamed: "unicorn")
+    let player = SKSpriteNode(imageNamed: "krypton")
+    //player.size = CGSize(width: 100, height: 100)
     let ground = SKSpriteNode(imageNamed: "land-grass")
     let gameOverLine = SKSpriteNode(color: .red, size: CGSize(width: 1000, height: 10))
     var firstTouch: Bool = false
@@ -44,7 +46,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     override func didMove(to view: SKView) {
         if let character {
-            player.texture = SKTexture(imageNamed: character)
+            let texture = SKTexture(imageNamed: character)
+            player.texture = texture
+            if character != "unicorn"{
+                player.size = CGSize(width: 100, height: 150)
+            } else {
+                player.size = CGSize(width: 125, height: 150)
+            }
         }
         audioPlayer.preloadAudio(fileName: "jump", fileType: "mp3")
         self.size = CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
@@ -235,6 +243,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player.physicsBody?.restitution = CGFloat(0)
         //player.physicsBody?.affectedByGravity = true
         let gameOverScene = GameOverScene(size: self.size)
+        gameOverScene.character = character
+        gameOverScene.dismissAction = dismissAction
         let transition = SKTransition.crossFade(withDuration: 0.5)
         removeOffscreenPlatforms()
         audioPlayer.playSoundOnce(fileName: "fall", fileType: ".mp3")

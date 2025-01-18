@@ -10,6 +10,7 @@ import SpriteKit
 
 class StartScene: SKScene {
     var character: String?
+    var isPresented: Binding<Bool>?
     
     override func didMove(to view: SKView) {
         self.size = CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
@@ -24,6 +25,9 @@ class StartScene: SKScene {
             if startNode.name == "startButton" {
                 let game = GameScene(size: self.size)
                 game.character = self.character
+                game.dismissAction = { [weak self] in
+                    self?.isPresented?.wrappedValue = false
+                }
                 let transition = SKTransition.fade(withDuration: 1.2)
                 
                 self.view?.presentScene(game, transition: transition)
@@ -35,6 +39,7 @@ class StartScene: SKScene {
 struct GameView: View {
     let startScene = StartScene(fileNamed: "GameStartScene")!
     @State var selectedCharacter: String
+    @Binding var isGame: Bool
     
     var body: some View {
         SpriteView(scene: startScene)
@@ -42,6 +47,7 @@ struct GameView: View {
             .ignoresSafeArea()
             .onAppear {
                 startScene.character = self.selectedCharacter
+                startScene.isPresented = $isGame
             }
     }
 }

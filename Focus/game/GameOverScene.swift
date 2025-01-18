@@ -7,10 +7,13 @@
 
 import Foundation
 import SpriteKit
+import SwiftUI
 
 class GameOverScene: SKScene {
     let background = SKSpriteNode(imageNamed: "background")
     let gameOver = SKSpriteNode(imageNamed: "game-over")
+    var character: String?
+    var dismissAction: (() -> Void)?
     
     override func didMove(to view: SKView) {
         background.position = CGPoint(x: size.width / 2, y: size.height / 2)
@@ -21,13 +24,28 @@ class GameOverScene: SKScene {
         gameOver.zPosition = 5
         addChild(gameOver)
         
-        let tapLabel = SKLabelNode(fontNamed: "HelveticaNeue-Light")
+        let tapLabel = SKLabelNode(fontNamed: "SourceCodePro-Bold")
         tapLabel.text = "Tap to play again"
         tapLabel.fontSize = 30
         tapLabel.position = CGPoint(x: size.width / 2, y: size.height / 2 - 50)
         tapLabel.zPosition = 5
         tapLabel.fontColor = .black
+        tapLabel.name = "playAgain"
         addChild(tapLabel)
+        
+        let exitButton = SKSpriteNode(color: .red, size: CGSize(width: 100, height: 40))
+        exitButton.position = CGPoint(x: size.width / 2, y: size.height / 2 - 150)
+        exitButton.zPosition = 5
+        addChild(exitButton)
+        
+        let exitLabel = SKLabelNode(fontNamed: "SourceCodePro-Bold")
+        exitLabel.text = "Exit"
+        exitLabel.fontSize = 20
+        exitLabel.fontColor = .white
+        exitLabel.verticalAlignmentMode = .center
+        exitLabel.position = CGPoint(x: 0, y: 0)
+        exitLabel.name = "exitButton"
+        exitButton.addChild(exitLabel)
         
         let outAction = SKAction.fadeOut(withDuration: 0.5)
         let inAction = SKAction.fadeIn(withDuration: 0.5)
@@ -37,9 +55,20 @@ class GameOverScene: SKScene {
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        let gameScene = GameScene(size: self.size)
-        let transition = SKTransition.fade(withDuration: 0.5)
+        guard let touch = touches.first else { return }
+        let location = touch.location(in: self)
+        let touchedNode = atPoint(location)
         
-        view?.presentScene(gameScene, transition: transition)
+        if touchedNode.name == "exitButton" {
+            print("exit")
+            dismissAction?()
+            //return
+        } else if touchedNode.name == "playAgain"{
+            let gameScene = GameScene(size: self.size)
+            gameScene.character = character
+            gameScene.dismissAction = dismissAction
+            let transition = SKTransition.fade(withDuration: 0.5)
+            view?.presentScene(gameScene, transition: transition)
+        }
     }
 }

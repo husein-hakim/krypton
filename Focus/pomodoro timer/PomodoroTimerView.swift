@@ -295,7 +295,7 @@ struct PomodoroView: View {
                 }
             }
             .fullScreenCover(isPresented: $isGame) {
-                GameView(selectedCharacter: "unicorn")
+                GameView(selectedCharacter: "unicorn", isGame: $isGame)
             }
         }
     }
